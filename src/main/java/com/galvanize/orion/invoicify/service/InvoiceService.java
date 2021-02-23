@@ -3,16 +3,16 @@ package com.galvanize.orion.invoicify.service;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class InvoiceService {
 
-    @Autowired
     private InvoiceRepository invoiceRepository;
 
     public Invoice createInvoice(Invoice invoice) {
