@@ -2,7 +2,7 @@ name: Heroku CICD Pipeline
 on:
   # When PRs are merged, the push event is triggered for the target branch.
   push:
-    branches: [ herokuDeploy ]
+    branches: [ master ]
   workflow_dispatch:
 jobs:
   build:
