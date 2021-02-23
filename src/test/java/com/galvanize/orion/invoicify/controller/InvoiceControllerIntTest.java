@@ -29,6 +29,20 @@ public class InvoiceControllerIntTest {
     private ObjectMapper mapper;
 
     @Test
+    @DisplayName("Integration Test for creating new invoice with no line item")
+    public void testCreateInvoiceWithNoLineItem() throws Exception{
+        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(new ArrayList<>()).build();
+        mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
+                .andExpect(jsonPath("$.company").value(invoice.getCompany()))
+                .andExpect(jsonPath("$.totalCost").value(0))
+                .andExpect(jsonPath("$.createdDate").exists())
+                .andExpect(jsonPath("$.lineItem").isEmpty());
+    }
+
+    @Test
     @DisplayName("Integration Test for creating new invoice with one line item")
     public void testCreateInvoiceWithOneLineItem() throws Exception{
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();

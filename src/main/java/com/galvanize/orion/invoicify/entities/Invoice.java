@@ -21,7 +21,7 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<LineItem> lineItem = new ArrayList<>();
+    private List<LineItem> lineItem;
     private String company;
     private double totalCost;
     private String author;
