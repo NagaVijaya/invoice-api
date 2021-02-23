@@ -23,4 +23,4 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build   
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag inviocify:prod
+      run: docker build . --file Dockerfile --tag invoicify:prod
