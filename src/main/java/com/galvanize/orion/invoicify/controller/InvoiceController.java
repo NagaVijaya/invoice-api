@@ -20,7 +20,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/invoices")
-    public void getAllInvoices(){
-
+    public String getAllInvoices(){
+        return "Hello";
     }
 }
