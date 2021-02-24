@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1")
 @AllArgsConstructor
@@ -20,7 +23,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/invoices")
-    public String getAllInvoices(){
-        return "Hello";
+    public List<String> getAllInvoices(){
+        return new ArrayList<>();
     }
 }

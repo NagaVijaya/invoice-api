@@ -31,5 +31,12 @@ public class InvoiceControllerUnitTest {
                 .andExpect(jsonPath("$").exists());
     }
 
+    @Test
+    public void  test_getAllInvoices_Returns_EmptyList() throws Exception {
+        mockMvc.perform(get("/api/v1/invoices"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
 
 }
