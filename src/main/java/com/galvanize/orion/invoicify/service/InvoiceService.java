@@ -31,4 +31,7 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
+    public List<String> getAllInvoices() {
+        return null;
+    }
 }

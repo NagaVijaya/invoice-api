@@ -24,6 +24,6 @@ public class InvoiceController {
 
     @GetMapping("/invoices")
     public List<String> getAllInvoices(){
-        return new ArrayList<>();
+        return invoiceService.getAllInvoices();
     }
 }
