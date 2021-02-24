@@ -18,4 +18,9 @@ public class InvoiceController {
     public Invoice createInvoice(@RequestBody Invoice invoice){
         return invoiceService.createInvoice(invoice);
     }
+
+    @GetMapping("/invoices")
+    public void getAllInvoices(){
+
+    }
 }
