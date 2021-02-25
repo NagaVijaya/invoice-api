@@ -4,16 +4,12 @@ import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -59,5 +55,12 @@ public class InvoiceServiceTest {
         assertEquals(expectedInvoice.getLineItem().get(0).getFee(), 54);
         assertEquals(expectedInvoice.getLineItem().get(1).getFee(), 46);
         verify(invoiceRepository, times(1)).save(any());
+    }
+
+    @Test
+    public void getAllInvoices_forEmptyList() {
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        List<Invoice> result = invoiceService.getAllInvoices();
+        assertEquals(0, result.size());
     }
 }
