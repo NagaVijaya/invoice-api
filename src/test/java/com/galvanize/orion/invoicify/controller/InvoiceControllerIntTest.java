@@ -102,8 +102,14 @@ public class InvoiceControllerIntTest {
 
     @Test
     public void test_getAllInvoices_returns_multipleInvoice() throws Exception {
+
+        List<LineItem> lineItemList = new ArrayList<>();
+        lineItemList.add(LineItem.builder()
+                .description("lineitem1")
+                .build());
         Invoice invoice01 = Invoice.builder()
                 .author("Peter")
+                .lineItem(lineItemList)
                 .build();
         Invoice invoice02 = Invoice.builder()
                 .author("Naga")
@@ -116,7 +122,10 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].author").value("Peter"))
+                .andExpect(jsonPath("$[0].lineItem[0].description").value("lineitem1"))
                 .andExpect(jsonPath("$[1].author").value("Naga"));
     }
+
+
 
 }
