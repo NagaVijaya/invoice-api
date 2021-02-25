@@ -24,6 +24,7 @@ public class InvoiceController {
 
 
     @PutMapping("/invoice/{invoiceId}")
+
     public Invoice addLineItem(@PathVariable UUID invoiceId, @RequestBody LineItem lineItem){
         return invoiceService.addLineItemToInvoice(invoiceId, lineItem);
     }
