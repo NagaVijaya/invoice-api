@@ -3,12 +3,9 @@ package com.galvanize.orion.invoicify.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.service.InvoiceService;
-import org.apache.commons.lang3.builder.ToStringExclude;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -58,8 +55,8 @@ public class InvoiceControllerUnitTest {
 
     @Test
     public void test_getAllInvoices_returns_emptyList() throws Exception {
-        List<String> stringList = new ArrayList<>();
-        when(invoiceService.getAllInvoices()).thenReturn(stringList);
+        List<Invoice> invoiceList = new ArrayList<>();
+        when(invoiceService.getAllInvoices()).thenReturn(invoiceList);
         mockMvc.perform(get("/api/v1/invoices"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
@@ -69,28 +66,37 @@ public class InvoiceControllerUnitTest {
 
     @Test
     public void test_getAllInvoices_returns_singleInvoice() throws Exception {
-        List<String> stringList = new ArrayList<>();
-        stringList.add("invoice1");
-        when(invoiceService.getAllInvoices()).thenReturn(stringList);
+        List<Invoice> invoiceList = new ArrayList<>();
+        invoiceList.add(Invoice.builder()
+                .author("Peter")
+                .build());
+        when(invoiceService.getAllInvoices()).thenReturn(invoiceList);
 
         mockMvc.perform(get("/api/v1/invoices"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].author").value("Peter"));
         verify(invoiceService, times(1)).getAllInvoices();
     }
 
     @Test
     public void test_getAllInvoices_returns_multipleInvoice() throws Exception {
-        List<String> stringList = new ArrayList<>();
-        stringList.add("invoice1");
-        stringList.add("invoice2");
-        when(invoiceService.getAllInvoices()).thenReturn(stringList);
+        List<Invoice> invoiceList = new ArrayList<>();
+        invoiceList.add(Invoice.builder()
+                .author("Peter")
+                .build());
+        invoiceList.add(Invoice.builder()
+                .author("Naga")
+                .build());
+        when(invoiceService.getAllInvoices()).thenReturn(invoiceList);
 
         mockMvc.perform(get("/api/v1/invoices"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].author").value("Peter"))
+                .andExpect(jsonPath("$[1].author").value("Naga"));
         verify(invoiceService, times(1)).getAllInvoices();
     }
 

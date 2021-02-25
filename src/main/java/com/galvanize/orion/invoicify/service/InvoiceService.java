@@ -31,7 +31,7 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
-    public List<String> getAllInvoices() {
+    public List<Invoice> getAllInvoices() {
         return null;
     }
 }

@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -23,7 +22,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/invoices")
-    public List<String> getAllInvoices(){
+    public List<Invoice> getAllInvoices(){
         return invoiceService.getAllInvoices();
     }
 }
