@@ -6,8 +6,10 @@ import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.sound.sampled.Line;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -31,4 +33,7 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
+    public Invoice addLineItemToInvoice(UUID invoiceId, LineItem lineItem) {
+        return null;
+    }
 }
