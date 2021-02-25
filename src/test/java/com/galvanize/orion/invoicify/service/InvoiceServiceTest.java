@@ -59,8 +59,26 @@ public class InvoiceServiceTest {
 
     @Test
     public void getAllInvoices_forEmptyList() {
+        when(invoiceRepository.findAll()).thenReturn(new ArrayList<>());
+
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         List<Invoice> result = invoiceService.getAllInvoices();
         assertEquals(0, result.size());
+
+        verify(invoiceRepository, times(1)).findAll();
+    }
+
+    @Test void getAllInvoices_forSingleInvoice() {
+        List<Invoice> invoiceList = new ArrayList<>();
+        invoiceList.add(Invoice.builder().build());
+        when(invoiceRepository.findAll()).thenReturn(invoiceList);
+
+
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        List<Invoice> result = invoiceService.getAllInvoices();
+        assertEquals(1, result.size());
+
+        verify(invoiceRepository, times(1)).findAll();
+
     }
 }

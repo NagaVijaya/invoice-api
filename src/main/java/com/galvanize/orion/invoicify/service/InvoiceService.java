@@ -6,7 +6,6 @@ import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +32,6 @@ public class InvoiceService {
     }
 
     public List<Invoice> getAllInvoices() {
-        return new ArrayList<>();
+        return invoiceRepository.findAll();
     }
 }
