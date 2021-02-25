@@ -81,4 +81,21 @@ public class InvoiceServiceTest {
         verify(invoiceRepository, times(1)).findAll();
 
     }
+
+    @Test void getAllInvoices_forMultipleInvoice() {
+        List<Invoice> invoiceList = new ArrayList<>();
+        invoiceList.add(Invoice.builder().author("Peter").build());
+        invoiceList.add(Invoice.builder().author("Naga").build());
+        when(invoiceRepository.findAll()).thenReturn(invoiceList);
+
+
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        List<Invoice> result = invoiceService.getAllInvoices();
+        assertEquals(2, result.size());
+        assertEquals("Peter", result.get(0).getAuthor());
+        assertEquals("Naga", result.get(1).getAuthor());
+
+        verify(invoiceRepository, times(1)).findAll();
+
+    }
 }
