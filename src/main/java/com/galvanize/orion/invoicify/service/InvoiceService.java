@@ -34,8 +34,14 @@ public class InvoiceService {
     }
 
     public Invoice addLineItemToInvoice(UUID invoiceId, LineItem lineItem) {
+        Invoice existingInvoice = invoiceRepository.findById(invoiceId).get();
 
+        double itemCost = lineItem.getQuantity() * lineItem.getRate();
+        lineItem.setFee(itemCost);
 
-        return null;
+        existingInvoice.getLineItem().add(lineItem);
+        existingInvoice.setTotalCost(existingInvoice.getTotalCost()+itemCost);
+
+        return invoiceRepository.save(existingInvoice);
     }
 }

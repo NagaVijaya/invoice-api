@@ -97,7 +97,7 @@ public class InvoiceControllerIntTest {
 
     @Test
     @DisplayName("Integration Test for adding single lineItem to an existing invoice")
-    public void testAddSingleLineItemToExistingInvoce() throws Exception {
+    public void testAddSingleLineItemToExistingInvoice() throws Exception {
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
@@ -110,13 +110,13 @@ public class InvoiceControllerIntTest {
 
         mvc.perform(put("/api/v1/invoice/"+existingInvoice.getId()).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(lineItem2)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(existingInvoice.getId()))
+                .andExpect(jsonPath("$.id").value(existingInvoice.getId().toString()))
                 .andExpect(jsonPath("$.author").value(existingInvoice.getAuthor()))
                 .andExpect(jsonPath("$.company").value(existingInvoice.getCompany()))
                 .andExpect(jsonPath("$.totalCost").value(100))
                 .andExpect(jsonPath("$.createdDate").exists())
                 .andExpect(jsonPath("$.lineItem", hasSize(2)))
-                .andExpect(jsonPath("$.lineItem[0].id").value(existingInvoice.getLineItem().get(0).getId()))
+                .andExpect(jsonPath("$.lineItem[0].id").value(existingInvoice.getLineItem().get(0).getId().toString()))
                 .andExpect(jsonPath("$.lineItem[0].description").value(lineItem.getDescription()))
                 .andExpect(jsonPath("$.lineItem[0].quantity").value(lineItem.getQuantity()))
                 .andExpect(jsonPath("$.lineItem[0].rate").value(lineItem.getRate()))

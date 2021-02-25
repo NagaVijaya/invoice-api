@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -53,7 +54,7 @@ public class InvoiceControllerTest {
         Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(new ArrayList<>()).build();
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
         invoice.setLineItem(Collections.singletonList(lineItem));
-        when(invoiceService.addLineItemToInvoice(any(), any())).thenReturn(invoice);
+        when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenReturn(invoice);
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(lineItem)))
                 .andExpect(status().isOk());
 
