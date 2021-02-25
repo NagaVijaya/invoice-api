@@ -64,6 +64,7 @@ public class InvoiceControllerUnitTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$.length()").value(0));
+        verify(invoiceService, times(1)).getAllInvoices();
     }
 
     @Test
@@ -76,6 +77,21 @@ public class InvoiceControllerUnitTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$.length()").value(1));
+        verify(invoiceService, times(1)).getAllInvoices();
+    }
+
+    @Test
+    public void test_getAllInvoices_returns_multipleInvoice() throws Exception {
+        List<String> stringList = new ArrayList<>();
+        stringList.add("invoice1");
+        stringList.add("invoice2");
+        when(invoiceService.getAllInvoices()).thenReturn(stringList);
+
+        mockMvc.perform(get("/api/v1/invoices"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(2));
+        verify(invoiceService, times(1)).getAllInvoices();
     }
 
 }
