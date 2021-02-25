@@ -24,7 +24,6 @@ public class InvoiceController {
 
 
     @PutMapping("/invoice/{invoiceId}")
-    @ResponseStatus(HttpStatus.CREATED)
     public Invoice addLineItem(@PathVariable UUID invoiceId, @RequestBody LineItem lineItem){
         return invoiceService.addLineItemToInvoice(invoiceId, lineItem);
     }

@@ -92,4 +92,6 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$.lineItem[1].rate").value(lineItem2.getRate()))
                 .andExpect(jsonPath("$.lineItem[1].fee").value(46));
     }
+
+    
 }
