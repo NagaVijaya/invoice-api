@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -33,5 +34,17 @@ public class InvoiceService {
 
     public List<Invoice> getAllInvoices() {
         return invoiceRepository.findAll();
+    }
+
+    public Invoice addLineItemToInvoice(UUID invoiceId, LineItem lineItem) {
+        Invoice existingInvoice = invoiceRepository.findById(invoiceId).get();
+
+        double itemCost = lineItem.getQuantity() * lineItem.getRate();
+        lineItem.setFee(itemCost);
+
+        existingInvoice.getLineItem().add(lineItem);
+        existingInvoice.setTotalCost(existingInvoice.getTotalCost() + itemCost);
+
+        return invoiceRepository.save(existingInvoice);
     }
 }
