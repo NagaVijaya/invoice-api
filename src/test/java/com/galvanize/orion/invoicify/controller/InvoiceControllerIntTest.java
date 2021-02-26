@@ -3,6 +3,7 @@ package com.galvanize.orion.invoicify.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
+import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,10 +26,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class InvoiceControllerIntTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
 
     @Autowired
     private ObjectMapper mapper;
@@ -128,4 +135,33 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$.lineItem[1].fee").value(46));
 
     }
+
+    @Test
+    public void test_getAllInvoices_returns_multipleInvoice() throws Exception {
+
+        List<LineItem> lineItemList = new ArrayList<>();
+        lineItemList.add(LineItem.builder()
+                .description("lineitem1")
+                .build());
+        Invoice invoice01 = Invoice.builder()
+                .author("Peter")
+                .lineItem(lineItemList)
+                .build();
+        Invoice invoice02 = Invoice.builder()
+                .author("Naga")
+                .build();
+        invoiceRepository.save(invoice01);
+        invoiceRepository.save(invoice02);
+
+        mvc.perform(get("/api/v1/invoices"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].author").value("Peter"))
+                .andExpect(jsonPath("$[0].lineItem[0].description").value("lineitem1"))
+                .andExpect(jsonPath("$[1].author").value("Naga"));
+    }
+
+
+
 }

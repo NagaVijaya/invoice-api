@@ -33,6 +33,10 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
+    public List<Invoice> getAllInvoices() {
+        return invoiceRepository.findAll();
+    }
+
     public Invoice addLineItemToInvoice(UUID invoiceId, LineItem lineItem) {
         Invoice existingInvoice = invoiceRepository.findById(invoiceId).get();
 

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1")
 @AllArgsConstructor
@@ -27,5 +29,10 @@ public class InvoiceController {
 
     public Invoice addLineItem(@PathVariable UUID invoiceId, @RequestBody LineItem lineItem){
         return invoiceService.addLineItemToInvoice(invoiceId, lineItem);
+    }
+
+    @GetMapping("/invoices")
+    public List<Invoice> getAllInvoices(){
+        return invoiceService.getAllInvoices();
     }
 }
