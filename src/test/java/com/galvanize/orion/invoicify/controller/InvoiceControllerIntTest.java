@@ -115,7 +115,8 @@ public class InvoiceControllerIntTest {
         Invoice existingInvoice = mapper.readValue(result.getResponse().getContentAsString(),Invoice.class);
         LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
 
-        mvc.perform(put("/api/v1/invoice/"+existingInvoice.getId()).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(lineItem2)))
+        mvc.perform(put("/api/v1/invoice/"+existingInvoice.getId()).contentType(MediaType.APPLICATION_JSON)
+                    .content(mapper.writeValueAsString(lineItem2)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(existingInvoice.getId().toString()))
                 .andExpect(jsonPath("$.author").value(existingInvoice.getAuthor()))

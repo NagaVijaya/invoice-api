@@ -6,7 +6,6 @@ import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.sound.sampled.Line;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -44,7 +43,7 @@ public class InvoiceService {
         lineItem.setFee(itemCost);
 
         existingInvoice.getLineItem().add(lineItem);
-        existingInvoice.setTotalCost(existingInvoice.getTotalCost()+itemCost);
+        existingInvoice.setTotalCost(existingInvoice.getTotalCost() + itemCost);
 
         return invoiceRepository.save(existingInvoice);
     }
