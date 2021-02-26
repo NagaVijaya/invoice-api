@@ -12,12 +12,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -123,6 +124,18 @@ public class InvoiceControllerUnitTest {
                 .andExpect(jsonPath("$[0].lineItem[0].description").value("lineitem1"));
         verify(invoiceService, times(1)).getAllInvoices();
 
+    }
+
+    @Test
+    public void addLineItemToExistingInvoice() throws Exception {
+        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(new ArrayList<>()).build();
+        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
+        invoice.setLineItem(Collections.singletonList(lineItem));
+        when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenReturn(invoice);
+        mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(lineItem)))
+                .andExpect(status().isOk());
+
+        verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
     }
 
 }
