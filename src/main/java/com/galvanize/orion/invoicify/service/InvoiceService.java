@@ -31,7 +31,7 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
-    public List<Invoice> getAllInvoices() {
+    public List<Invoice> getAllInvoices(Integer offset) {
         return invoiceRepository.findAll();
     }
 }

@@ -62,7 +62,7 @@ public class InvoiceServiceTest {
         when(invoiceRepository.findAll()).thenReturn(new ArrayList<>());
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
-        List<Invoice> result = invoiceService.getAllInvoices();
+        List<Invoice> result = invoiceService.getAllInvoices(0);
         assertEquals(0, result.size());
 
         verify(invoiceRepository, times(1)).findAll();
@@ -75,7 +75,7 @@ public class InvoiceServiceTest {
 
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
-        List<Invoice> result = invoiceService.getAllInvoices();
+        List<Invoice> result = invoiceService.getAllInvoices(0);
         assertEquals(1, result.size());
 
         verify(invoiceRepository, times(1)).findAll();
@@ -90,7 +90,7 @@ public class InvoiceServiceTest {
 
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
-        List<Invoice> result = invoiceService.getAllInvoices();
+        List<Invoice> result = invoiceService.getAllInvoices(0);
         assertEquals(2, result.size());
         assertEquals("Peter", result.get(0).getAuthor());
         assertEquals("Naga", result.get(1).getAuthor());
