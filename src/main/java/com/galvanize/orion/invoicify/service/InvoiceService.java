@@ -3,6 +3,7 @@ package com.galvanize.orion.invoicify.service;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -68,7 +71,18 @@ public class InvoiceService {
         return invoiceRepository.save(existingInvoice);
     }
 
-    public void deleteInvoice(UUID invoiceId) {
+    public void deleteInvoice(UUID invoiceId) throws InvoiceNotStaleException {
+        Invoice invoice = invoiceRepository.findById(invoiceId).get();
+        LocalDate localYearBackDate = LocalDate.now().minusYears(1);
+
+        LocalDate invoiceLocalDate = invoice.getCreatedDate().toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        if(invoiceLocalDate.isAfter(localYearBackDate)){
+            throw new InvoiceNotStaleException();
+        }
+
         invoiceRepository.deleteById(invoiceId);
     }
 }

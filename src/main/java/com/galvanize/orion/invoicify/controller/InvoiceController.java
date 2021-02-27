@@ -3,6 +3,7 @@ package com.galvanize.orion.invoicify.controller;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
 import com.galvanize.orion.invoicify.service.InvoiceService;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import lombok.AllArgsConstructor;
@@ -40,7 +41,7 @@ public class InvoiceController {
     }
 
     @DeleteMapping("/invoice/{invoiceId}")
-    public void deleteInvoice(@PathVariable UUID invoiceId){
+    public void deleteInvoice(@PathVariable UUID invoiceId) throws InvoiceNotStaleException {
         invoiceService.deleteInvoice(invoiceId);
 
     }
