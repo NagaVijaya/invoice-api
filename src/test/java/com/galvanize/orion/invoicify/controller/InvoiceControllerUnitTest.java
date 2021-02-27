@@ -5,6 +5,7 @@ import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
 import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.service.InvoiceService;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
@@ -228,10 +229,24 @@ public class InvoiceControllerUnitTest {
                 .andExpect(jsonPath("$.message").value("Invoice paid, cannot be modified"));
         verify(invoiceService, times(1)).updateInvoice(any());
     }
+
+
     @Test
     public void test_delete_invoice() throws Exception {
         mockMvc.perform(delete("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2"))
                 .andExpect(status().isOk());
+
+        verify(invoiceService, times(1)).deleteInvoice(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+    }
+
+    @Test
+    public void test_delete_invoice_whenInvoiceLessThanOneYearOld_ThrowInvoiceNotStaleException() throws Exception {
+
+        doThrow(new InvoiceNotStaleException()).when(invoiceService).deleteInvoice(any(UUID.class));
+
+        mockMvc.perform(delete("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2"))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value("Invoice is less than 1 year old, can't delete!"));
 
         verify(invoiceService, times(1)).deleteInvoice(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
     }
