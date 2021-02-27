@@ -32,7 +32,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/invoices")
-    public List<Invoice> getAllInvoices(@RequestParam(defaultValue = "0") Integer offset){
-        return invoiceService.getAllInvoices(offset);
+    public List<Invoice> getAllInvoices(@RequestParam(defaultValue = "0") Integer page){
+        return invoiceService.getAllInvoices(page);
     }
 }

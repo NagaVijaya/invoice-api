@@ -148,11 +148,11 @@ public class InvoiceServiceTest {
 
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
-        List<Invoice> result = invoiceService.getAllInvoices(10);
+        List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(2, result.size());
         assertEquals("Peter", result.get(0).getAuthor());
         assertEquals("Naga", result.get(1).getAuthor());
-        Page<Invoice> page = invoiceRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        Page<Invoice> page = invoiceRepository.findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
 
         verify(invoiceRepository, times(1)).findAll();
 

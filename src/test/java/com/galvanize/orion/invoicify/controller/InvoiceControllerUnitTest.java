@@ -132,7 +132,7 @@ public class InvoiceControllerUnitTest {
     }
 
     @Test
-    public void test_getAllInvoices_handlesOffsetParameter() throws Exception {
+    public void test_getAllInvoices_handlesPageParameter() throws Exception {
         List<Invoice> invoiceList = new ArrayList<>();
         invoiceList.add(Invoice.builder()
                 .author("Peter")
@@ -140,14 +140,14 @@ public class InvoiceControllerUnitTest {
         invoiceList.add(Invoice.builder()
                 .author("Naga")
                 .build());
-        when(invoiceService.getAllInvoices(10)).thenReturn(invoiceList);
+        when(invoiceService.getAllInvoices(1)).thenReturn(invoiceList);
 
-        mockMvc.perform(get("/api/v1/invoices?offset=10"))
+        mockMvc.perform(get("/api/v1/invoices?page=1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].author").value("Peter"))
                 .andExpect(jsonPath("$[1].author").value("Naga"));
-        verify(invoiceService, times(1)).getAllInvoices(10);
+        verify(invoiceService, times(1)).getAllInvoices(1);
     }
 
 

@@ -32,7 +32,7 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
-    public List<Invoice> getAllInvoices(Integer offset) {
+    public List<Invoice> getAllInvoices(Integer page) {
 
         return invoiceRepository.findAll();
     }
