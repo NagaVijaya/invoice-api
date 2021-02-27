@@ -3,14 +3,12 @@ package com.galvanize.orion.invoicify.service;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
-import com.galvanize.orion.invoicify.testUtilities.PageRequestMatcher;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 
 import java.util.*;
 
@@ -106,7 +104,7 @@ public class InvoiceServiceTest {
         List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(0, result.size());
 
-        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10));
     }
 
     @Test
@@ -121,7 +119,7 @@ public class InvoiceServiceTest {
         List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(1, result.size());
 
-        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10));
 
     }
 
@@ -140,7 +138,7 @@ public class InvoiceServiceTest {
         assertEquals("Peter", result.get(0).getAuthor());
         assertEquals("Naga", result.get(1).getAuthor());
 
-        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10));
 
     }
 
@@ -159,7 +157,9 @@ public class InvoiceServiceTest {
         assertEquals("Peter", result.get(0).getAuthor());
         assertEquals("Naga", result.get(1).getAuthor());
 
-        verify(invoiceRepository).findAll(argThat(new PageRequestMatcher(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")))));
+        verify(invoiceRepository).findAll(PageRequest.of(1, 10
+                //, Sort.by(Sort.Direction.ASC, "createdDate")
+        ));
 
     }
 }
