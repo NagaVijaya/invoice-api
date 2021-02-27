@@ -4,6 +4,7 @@ import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
+import com.galvanize.orion.invoicify.utilities.Constants;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +40,8 @@ public class InvoiceService {
 
     public List<Invoice> getAllInvoices(Integer pageNumber) {
 
-        Page<Invoice> page = invoiceRepository.findAll(PageRequest.of(pageNumber, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        Page<Invoice> page = invoiceRepository.findAll(PageRequest.of(pageNumber,
+                Constants.PAGE_SIZE, Sort.by(Sort.Direction.ASC, Constants.ORDER_COLUMN)));
 
         return page.getContent();
     }
