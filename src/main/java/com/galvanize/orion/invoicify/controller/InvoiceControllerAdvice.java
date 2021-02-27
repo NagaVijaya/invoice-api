@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,5 +22,14 @@ public class InvoiceControllerAdvice extends ResponseEntityExceptionHandler {
         invoiceNotFound.put("message", "Invoice does not exist");
         String messageObject = objectMapper.writeValueAsString(invoiceNotFound);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvoicePaidException.class)
+    public ResponseEntity<Object> handleInvoicePaidException(InvoicePaidException invoicePaidException, WebRequest webRequest) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode invoicePaid = objectMapper.createObjectNode();
+        invoicePaid.put("message", "Invoice paid, cannot be modified");
+        String messageObject = objectMapper.writeValueAsString(invoicePaid);
+        return new ResponseEntity<>(messageObject, HttpStatus.NOT_MODIFIED);
     }
 }

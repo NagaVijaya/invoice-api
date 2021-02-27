@@ -43,4 +43,13 @@ public class InvoiceTestHelper {
                 .lineItem(Collections.singletonList(getLineItem()))
                 .build();
     }
+
+    public static Invoice getPaidInvoice() {
+        return Invoice.builder()
+                .author("Jenn")
+                .company("Cognizant")
+                .status(StatusEnum.PAID)
+                .lineItem(Collections.singletonList(getLineItem()))
+                .build();
+    }
 }

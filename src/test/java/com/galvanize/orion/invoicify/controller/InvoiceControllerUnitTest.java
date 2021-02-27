@@ -1,11 +1,11 @@
 package com.galvanize.orion.invoicify.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.service.InvoiceService;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import org.junit.jupiter.api.Test;
@@ -193,7 +193,7 @@ public class InvoiceControllerUnitTest {
                 .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Invoice does not exist"));
-
+        verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
     }
 
     @Test
@@ -210,6 +210,22 @@ public class InvoiceControllerUnitTest {
                 .andExpect(jsonPath("$.author").value(modifiedInvoice.getAuthor()))
                 .andExpect(jsonPath("$.company").value(modifiedInvoice.getCompany()))
                 .andExpect(jsonPath("$.status").value(StatusEnum.PAID.toString()));
+
+        verify(invoiceService, times(1)).updateInvoice(any());
+
     }
 
+    @Test
+    public void modifyPaidInvoice_throwsException() throws Exception {
+        Invoice modifiedInvoice = InvoiceTestHelper.getPaidInvoice();
+        modifiedInvoice.setCompany("Dunder Mifflin");
+        modifiedInvoice.setAuthor("Michael Scott");
+
+        when(invoiceService.updateInvoice(any())).thenThrow(InvoicePaidException.class);
+        mockMvc.perform(patch("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(modifiedInvoice)))
+                .andExpect(status().isNotModified())
+                .andExpect(jsonPath("$.message").value("Invoice paid, cannot be modified"));
+        verify(invoiceService, times(1)).updateInvoice(any());
+    }
 }

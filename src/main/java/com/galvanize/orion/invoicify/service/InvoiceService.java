@@ -3,6 +3,7 @@ package com.galvanize.orion.invoicify.service;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import lombok.AllArgsConstructor;
@@ -68,7 +69,7 @@ public class InvoiceService {
         return invoiceRepository.save(existingInvoice);
     }
 
-    public Invoice updateInvoice(Invoice invoice) {
+    public Invoice updateInvoice(Invoice invoice) throws InvoicePaidException {
         return null;
     }
 }
