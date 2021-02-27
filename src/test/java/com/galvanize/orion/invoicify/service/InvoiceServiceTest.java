@@ -1,5 +1,6 @@
 package com.galvanize.orion.invoicify.service;
 
+import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
@@ -62,7 +63,7 @@ public class InvoiceServiceTest {
         UUID uid = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3");
 
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).fee(54).build();
-        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        LineItem lineItem2 = InvoiceTestHelper.getLineItem2();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
         Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(lineItemList).build();
@@ -76,6 +77,9 @@ public class InvoiceServiceTest {
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         when(invoiceRepository.save(any())).thenReturn(expectedInvoice);
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingInvoice1);
+
+        // set up list of invoices to add
+
 
         Invoice actualInvoice = invoiceService.addLineItemToInvoice(uid, lineItem2);
 
@@ -138,7 +142,7 @@ public class InvoiceServiceTest {
 
         UUID uid = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3");
 
-        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        LineItem lineItem2 = InvoiceTestHelper.getLineItem2();
         Optional<Invoice> existingInvoice = Optional.empty();
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
