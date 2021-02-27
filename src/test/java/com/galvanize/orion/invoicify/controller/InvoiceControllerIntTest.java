@@ -2,6 +2,7 @@ package com.galvanize.orion.invoicify.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
@@ -136,6 +137,48 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$.lineItem[1].quantity").value(lineItem2.getQuantity()))
                 .andExpect(jsonPath("$.lineItem[1].rate").value(lineItem2.getRate()))
                 .andExpect(jsonPath("$.lineItem[1].fee").value(46));
+
+    }
+
+    @Test
+    @DisplayName("Integration Test for adding multiple lineItems to an existing invoice")
+    public void testAddMultipleLineItemsToExistingInvoice() throws Exception {
+        LineItem lineItem = InvoiceTestHelper.getLineItem();
+        List<LineItem> lineItemList = new ArrayList<>();
+        lineItemList.add(lineItem);
+        Invoice invoice = Invoice.builder().lineItem(lineItemList).author("Gokul").company("Cognizant").build();
+        MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
+                .andReturn();
+
+        Invoice existingInvoice = mapper.readValue(result.getResponse().getContentAsString(),Invoice.class);
+        LineItem lineItem2 = InvoiceTestHelper.getLineItem2();
+        LineItem lineItem3 = InvoiceTestHelper.getLineItem3();
+
+
+        mvc.perform(put("/api/v1/invoice/"+existingInvoice.getId()).contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(Arrays.asList(lineItem2, lineItem3))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(existingInvoice.getId().toString()))
+                .andExpect(jsonPath("$.author").value(existingInvoice.getAuthor()))
+                .andExpect(jsonPath("$.company").value(existingInvoice.getCompany()))
+                .andExpect(jsonPath("$.totalCost").value(150))
+                .andExpect(jsonPath("$.createdDate").exists())
+                .andExpect(jsonPath("$.lineItem", hasSize(3)))
+                .andExpect(jsonPath("$.lineItem[0].id").value(existingInvoice.getLineItem().get(0).getId().toString()))
+                .andExpect(jsonPath("$.lineItem[0].description").value(lineItem.getDescription()))
+                .andExpect(jsonPath("$.lineItem[0].quantity").value(lineItem.getQuantity()))
+                .andExpect(jsonPath("$.lineItem[0].rate").value(lineItem.getRate()))
+                .andExpect(jsonPath("$.lineItem[0].fee").value(54))
+                .andExpect(jsonPath("$.lineItem[1].id").exists())
+                .andExpect(jsonPath("$.lineItem[1].description").value(lineItem2.getDescription()))
+                .andExpect(jsonPath("$.lineItem[1].quantity").value(lineItem2.getQuantity()))
+                .andExpect(jsonPath("$.lineItem[1].rate").value(lineItem2.getRate()))
+                .andExpect(jsonPath("$.lineItem[1].fee").value(46))
+                .andExpect(jsonPath("$.lineItem[2].id").exists())
+                .andExpect(jsonPath("$.lineItem[2].description").value(lineItem3.getDescription()))
+                .andExpect(jsonPath("$.lineItem[2].quantity").value(lineItem3.getQuantity()))
+                .andExpect(jsonPath("$.lineItem[2].rate").value(lineItem3.getRate()))
+                .andExpect(jsonPath("$.lineItem[2].fee").value(50));
 
     }
 

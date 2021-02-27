@@ -17,6 +17,10 @@ public class InvoiceTestHelper {
         return LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
     }
 
+    public static LineItem getLineItem3() {
+        return LineItem.builder().description("project 3").quantity(10).rate(5.0).build();
+    }
+
     public static List<LineItem> getLineItemListWithTwoLineItem() {
         return Arrays.asList(getLineItem(), getLineItem2());
     }

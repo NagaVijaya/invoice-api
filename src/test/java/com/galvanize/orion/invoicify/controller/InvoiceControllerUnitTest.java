@@ -1,6 +1,7 @@
 package com.galvanize.orion.invoicify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
@@ -14,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.*;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -139,6 +141,22 @@ public class InvoiceControllerUnitTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
                 .andExpect(jsonPath("$.company").value(invoice.getCompany()));
+
+        verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
+    }
+
+    @Test
+    public void addMultipleLineItemToExistingInvoice() throws Exception {
+        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(new ArrayList<>()).build();
+        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
+        LineItem lineItem2 = InvoiceTestHelper.getLineItem2();
+        invoice.setLineItem(Arrays.asList(lineItem, lineItem2));
+        when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenReturn(invoice);
+        mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Arrays.asList(lineItem, lineItem2))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
+                .andExpect(jsonPath("$.company").value(invoice.getCompany()))
+                .andExpect(jsonPath("$.lineItem", hasSize(2)));
 
         verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
     }
