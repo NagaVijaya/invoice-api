@@ -10,12 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -59,6 +56,43 @@ public class InvoiceServiceTest {
         assertEquals(expectedInvoice.getLineItem().get(0).getFee(), 54);
         assertEquals(expectedInvoice.getLineItem().get(1).getFee(), 46);
         verify(invoiceRepository, times(1)).save(any());
+    }
+
+    @Test
+    public void testAddLineItemToExistingInvoice(){
+
+
+        UUID uid = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3");
+
+        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).fee(54).build();
+        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        List<LineItem> lineItemList = new ArrayList<>();
+        lineItemList.add(lineItem);
+        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(lineItemList).build();
+        Optional<Invoice> existingInvoice1 = Optional.of(invoice);
+
+        List<LineItem> lineItemList1 = new ArrayList<>();
+        lineItemList1.add(lineItem);
+        lineItemList1.add(lineItem2);
+        Invoice expectedInvoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(lineItemList1).totalCost(100).createdDate(new Date()).build();
+
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        when(invoiceRepository.save(any())).thenReturn(expectedInvoice);
+        when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingInvoice1);
+
+        Invoice actualInvoice = invoiceService.addLineItemToInvoice(uid, lineItem2);
+
+        assertEquals(expectedInvoice.getAuthor(), actualInvoice.getAuthor());
+        assertEquals(expectedInvoice.getCompany(), actualInvoice.getCompany());
+        assertEquals(expectedInvoice.getTotalCost(), actualInvoice.getTotalCost());
+        assertEquals(expectedInvoice.getCreatedDate(), actualInvoice.getCreatedDate());
+        assertEquals(expectedInvoice.getLineItem().size(), 2);
+        assertEquals(expectedInvoice.getLineItem().get(0).getFee(), 54);
+        assertEquals(expectedInvoice.getLineItem().get(1).getFee(), 46);
+        verify(invoiceRepository, times(1)).save(any());
+
+
+
     }
 
     @Test
