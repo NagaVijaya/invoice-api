@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -39,8 +40,12 @@ public class InvoiceService {
 
     public Invoice addLineItemToInvoice(UUID invoiceId, LineItem lineItem) throws InvoiceNotFoundException {
 
-        Optional<Invoice>
-        Invoice existingInvoice = invoiceRepository.findById(invoiceId).get();
+        Optional<Invoice> invoice = invoiceRepository.findById(invoiceId);
+        if (!invoice.isPresent()) {
+            throw new InvoiceNotFoundException("Invoice does not exist");
+        }
+
+        Invoice existingInvoice = invoice.get();
 
         double itemCost = lineItem.getQuantity() * lineItem.getRate();
         lineItem.setFee(itemCost);

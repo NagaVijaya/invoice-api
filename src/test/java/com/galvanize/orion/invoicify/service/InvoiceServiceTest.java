@@ -10,8 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -58,7 +57,7 @@ public class InvoiceServiceTest {
     }
 
     @Test
-    public void testAddLineItemToExistingInvoice(){
+    public void testAddLineItemToExistingInvoice() throws InvoiceNotFoundException {
 
         UUID uid = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3");
 
@@ -145,7 +144,14 @@ public class InvoiceServiceTest {
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingInvoice);
 
-        assertThrows(InvoiceNotFoundException.class, invoiceService.addLineItemToInvoice(uid, lineItem2));
+        Exception exception = assertThrows(InvoiceNotFoundException.class, () -> {
+            invoiceService.addLineItemToInvoice(uid, lineItem2);
+        });
+
+        String expectedMessage = "Invoice does not exist";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
 
         verify(invoiceRepository, times(1)).findById(any(UUID.class));
 
