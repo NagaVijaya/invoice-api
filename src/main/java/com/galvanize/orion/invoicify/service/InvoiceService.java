@@ -2,6 +2,7 @@ package com.galvanize.orion.invoicify.service;
 
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
+import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,9 @@ public class InvoiceService {
         return invoiceRepository.findAll();
     }
 
-    public Invoice addLineItemToInvoice(UUID invoiceId, LineItem lineItem) {
+    public Invoice addLineItemToInvoice(UUID invoiceId, LineItem lineItem) throws InvoiceNotFoundException {
+
+        Optional<Invoice>
         Invoice existingInvoice = invoiceRepository.findById(invoiceId).get();
 
         double itemCost = lineItem.getQuantity() * lineItem.getRate();

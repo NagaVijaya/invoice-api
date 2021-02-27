@@ -2,17 +2,16 @@ package com.galvanize.orion.invoicify.service;
 
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
+import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -61,7 +60,6 @@ public class InvoiceServiceTest {
     @Test
     public void testAddLineItemToExistingInvoice(){
 
-
         UUID uid = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3");
 
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).fee(54).build();
@@ -90,8 +88,7 @@ public class InvoiceServiceTest {
         assertEquals(expectedInvoice.getLineItem().get(0).getFee(), 54);
         assertEquals(expectedInvoice.getLineItem().get(1).getFee(), 46);
         verify(invoiceRepository, times(1)).save(any());
-
-
+        verify(invoiceRepository, times(1)).findById(any(UUID.class));
 
     }
 
@@ -134,6 +131,23 @@ public class InvoiceServiceTest {
         assertEquals("Naga", result.get(1).getAuthor());
 
         verify(invoiceRepository, times(1)).findAll();
+
+    }
+
+    @Test
+    public void testAddLineItemToNonExistingInvoice() throws InvoiceNotFoundException {
+
+        UUID uid = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3");
+
+        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        Optional<Invoice> existingInvoice = Optional.empty();
+
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingInvoice);
+
+        assertThrows(InvoiceNotFoundException.class, invoiceService.addLineItemToInvoice(uid, lineItem2));
+
+        verify(invoiceRepository, times(1)).findById(any(UUID.class));
 
     }
 }
