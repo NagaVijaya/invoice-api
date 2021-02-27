@@ -19,10 +19,11 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<LineItem> lineItem;
+    private List<LineItem> lineItems;
     private String company;
     private double totalCost;
     private StatusEnum status;
     private String author;
     private Date createdDate;
+    private Date modifiedDate;
 }

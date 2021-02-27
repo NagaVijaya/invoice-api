@@ -26,7 +26,7 @@ public class InvoiceService {
 
     public Invoice createInvoice(Invoice invoice) {
         double invoiceTotalCost = 0;
-        List<LineItem> lineItemList = invoice.getLineItem();
+        List<LineItem> lineItemList = invoice.getLineItems();
 
         //Calculate the cost for each line item and add that cost to invoice
         for(LineItem lineItem: lineItemList){
@@ -62,7 +62,7 @@ public class InvoiceService {
             double itemCost = lineItem.getQuantity() * lineItem.getRate();
             lineItem.setFee(itemCost);
             invoiceTotalCost += itemCost;
-            existingInvoice.getLineItem().add(lineItem);
+            existingInvoice.getLineItems().add(lineItem);
         }
 
         existingInvoice.setTotalCost(invoiceTotalCost);
@@ -80,7 +80,7 @@ public class InvoiceService {
         if(existingInvoice.getStatus().equals(StatusEnum.PAID)){
             throw new InvoicePaidException("Invoice paid, cannot be modified");
         }
-
+        invoice.setModifiedDate(new Date());
         return invoiceRepository.save(invoice);
     }
 }

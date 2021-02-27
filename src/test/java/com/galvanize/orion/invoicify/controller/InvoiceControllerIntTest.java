@@ -1,6 +1,5 @@
 package com.galvanize.orion.invoicify.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
@@ -44,7 +43,7 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration Test for creating new invoice with no line item")
     public void testCreateInvoiceWithNoLineItem() throws Exception {
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(new ArrayList<>()).build();
+        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(new ArrayList<>()).build();
         mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
@@ -52,7 +51,7 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$.company").value(invoice.getCompany()))
                 .andExpect(jsonPath("$.totalCost").value(0))
                 .andExpect(jsonPath("$.createdDate").exists())
-                .andExpect(jsonPath("$.lineItem").isEmpty());
+                .andExpect(jsonPath("$.lineItems").isEmpty());
     }
 
     @Test
@@ -61,7 +60,7 @@ public class InvoiceControllerIntTest {
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Invoice invoice = Invoice.builder().lineItem(lineItemList).author("Gokul").company("Cognizant").build();
+        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company("Cognizant").build();
         mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
@@ -69,11 +68,11 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$.company").value(invoice.getCompany()))
                 .andExpect(jsonPath("$.totalCost").value(54))
                 .andExpect(jsonPath("$.createdDate").exists())
-                .andExpect(jsonPath("$.lineItem[0].id").exists())
-                .andExpect(jsonPath("$.lineItem[0].description").value(lineItem.getDescription()))
-                .andExpect(jsonPath("$.lineItem[0].quantity").value(lineItem.getQuantity()))
-                .andExpect(jsonPath("$.lineItem[0].rate").value(lineItem.getRate()))
-                .andExpect(jsonPath("$.lineItem[0].fee").value(54));
+                .andExpect(jsonPath("$.lineItems[0].id").exists())
+                .andExpect(jsonPath("$.lineItems[0].description").value(lineItem.getDescription()))
+                .andExpect(jsonPath("$.lineItems[0].quantity").value(lineItem.getQuantity()))
+                .andExpect(jsonPath("$.lineItems[0].rate").value(lineItem.getRate()))
+                .andExpect(jsonPath("$.lineItems[0].fee").value(54));
     }
 
     @Test
@@ -84,7 +83,7 @@ public class InvoiceControllerIntTest {
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
         lineItemList.add(lineItem2);
-        Invoice invoice = Invoice.builder().lineItem(lineItemList).author("Gokul").company("Cognizant").build();
+        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company("Cognizant").build();
         mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
@@ -92,17 +91,17 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$.company").value(invoice.getCompany()))
                 .andExpect(jsonPath("$.totalCost").value(100))
                 .andExpect(jsonPath("$.createdDate").exists())
-                .andExpect(jsonPath("$.lineItem", hasSize(2)))
-                .andExpect(jsonPath("$.lineItem[0].id").exists())
-                .andExpect(jsonPath("$.lineItem[0].description").value(lineItem.getDescription()))
-                .andExpect(jsonPath("$.lineItem[0].quantity").value(lineItem.getQuantity()))
-                .andExpect(jsonPath("$.lineItem[0].rate").value(lineItem.getRate()))
-                .andExpect(jsonPath("$.lineItem[0].fee").value(54))
-                .andExpect(jsonPath("$.lineItem[1].id").exists())
-                .andExpect(jsonPath("$.lineItem[1].description").value(lineItem2.getDescription()))
-                .andExpect(jsonPath("$.lineItem[1].quantity").value(lineItem2.getQuantity()))
-                .andExpect(jsonPath("$.lineItem[1].rate").value(lineItem2.getRate()))
-                .andExpect(jsonPath("$.lineItem[1].fee").value(46));
+                .andExpect(jsonPath("$.lineItems", hasSize(2)))
+                .andExpect(jsonPath("$.lineItems[0].id").exists())
+                .andExpect(jsonPath("$.lineItems[0].description").value(lineItem.getDescription()))
+                .andExpect(jsonPath("$.lineItems[0].quantity").value(lineItem.getQuantity()))
+                .andExpect(jsonPath("$.lineItems[0].rate").value(lineItem.getRate()))
+                .andExpect(jsonPath("$.lineItems[0].fee").value(54))
+                .andExpect(jsonPath("$.lineItems[1].id").exists())
+                .andExpect(jsonPath("$.lineItems[1].description").value(lineItem2.getDescription()))
+                .andExpect(jsonPath("$.lineItems[1].quantity").value(lineItem2.getQuantity()))
+                .andExpect(jsonPath("$.lineItems[1].rate").value(lineItem2.getRate()))
+                .andExpect(jsonPath("$.lineItems[1].fee").value(46));
     }
 
     @Test
@@ -111,7 +110,7 @@ public class InvoiceControllerIntTest {
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Invoice invoice = Invoice.builder().lineItem(lineItemList).author("Gokul").company("Cognizant").build();
+        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company("Cognizant").build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
 
@@ -126,17 +125,17 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$.company").value(existingInvoice.getCompany()))
                 .andExpect(jsonPath("$.totalCost").value(100))
                 .andExpect(jsonPath("$.createdDate").exists())
-                .andExpect(jsonPath("$.lineItem", hasSize(2)))
-                .andExpect(jsonPath("$.lineItem[0].id").value(existingInvoice.getLineItem().get(0).getId().toString()))
-                .andExpect(jsonPath("$.lineItem[0].description").value(lineItem.getDescription()))
-                .andExpect(jsonPath("$.lineItem[0].quantity").value(lineItem.getQuantity()))
-                .andExpect(jsonPath("$.lineItem[0].rate").value(lineItem.getRate()))
-                .andExpect(jsonPath("$.lineItem[0].fee").value(54))
-                .andExpect(jsonPath("$.lineItem[1].id").exists())
-                .andExpect(jsonPath("$.lineItem[1].description").value(lineItem2.getDescription()))
-                .andExpect(jsonPath("$.lineItem[1].quantity").value(lineItem2.getQuantity()))
-                .andExpect(jsonPath("$.lineItem[1].rate").value(lineItem2.getRate()))
-                .andExpect(jsonPath("$.lineItem[1].fee").value(46));
+                .andExpect(jsonPath("$.lineItems", hasSize(2)))
+                .andExpect(jsonPath("$.lineItems[0].id").value(existingInvoice.getLineItems().get(0).getId().toString()))
+                .andExpect(jsonPath("$.lineItems[0].description").value(lineItem.getDescription()))
+                .andExpect(jsonPath("$.lineItems[0].quantity").value(lineItem.getQuantity()))
+                .andExpect(jsonPath("$.lineItems[0].rate").value(lineItem.getRate()))
+                .andExpect(jsonPath("$.lineItems[0].fee").value(54))
+                .andExpect(jsonPath("$.lineItems[1].id").exists())
+                .andExpect(jsonPath("$.lineItems[1].description").value(lineItem2.getDescription()))
+                .andExpect(jsonPath("$.lineItems[1].quantity").value(lineItem2.getQuantity()))
+                .andExpect(jsonPath("$.lineItems[1].rate").value(lineItem2.getRate()))
+                .andExpect(jsonPath("$.lineItems[1].fee").value(46));
 
     }
 
@@ -146,7 +145,7 @@ public class InvoiceControllerIntTest {
         LineItem lineItem = InvoiceTestHelper.getLineItem();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Invoice invoice = Invoice.builder().lineItem(lineItemList).author("Gokul").company("Cognizant").build();
+        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company("Cognizant").build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
 
@@ -163,22 +162,22 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$.company").value(existingInvoice.getCompany()))
                 .andExpect(jsonPath("$.totalCost").value(150))
                 .andExpect(jsonPath("$.createdDate").exists())
-                .andExpect(jsonPath("$.lineItem", hasSize(3)))
-                .andExpect(jsonPath("$.lineItem[0].id").value(existingInvoice.getLineItem().get(0).getId().toString()))
-                .andExpect(jsonPath("$.lineItem[0].description").value(lineItem.getDescription()))
-                .andExpect(jsonPath("$.lineItem[0].quantity").value(lineItem.getQuantity()))
-                .andExpect(jsonPath("$.lineItem[0].rate").value(lineItem.getRate()))
-                .andExpect(jsonPath("$.lineItem[0].fee").value(54))
-                .andExpect(jsonPath("$.lineItem[1].id").exists())
-                .andExpect(jsonPath("$.lineItem[1].description").value(lineItem2.getDescription()))
-                .andExpect(jsonPath("$.lineItem[1].quantity").value(lineItem2.getQuantity()))
-                .andExpect(jsonPath("$.lineItem[1].rate").value(lineItem2.getRate()))
-                .andExpect(jsonPath("$.lineItem[1].fee").value(46))
-                .andExpect(jsonPath("$.lineItem[2].id").exists())
-                .andExpect(jsonPath("$.lineItem[2].description").value(lineItem3.getDescription()))
-                .andExpect(jsonPath("$.lineItem[2].quantity").value(lineItem3.getQuantity()))
-                .andExpect(jsonPath("$.lineItem[2].rate").value(lineItem3.getRate()))
-                .andExpect(jsonPath("$.lineItem[2].fee").value(50));
+                .andExpect(jsonPath("$.lineItems", hasSize(3)))
+                .andExpect(jsonPath("$.lineItems[0].id").value(existingInvoice.getLineItems().get(0).getId().toString()))
+                .andExpect(jsonPath("$.lineItems[0].description").value(lineItem.getDescription()))
+                .andExpect(jsonPath("$.lineItems[0].quantity").value(lineItem.getQuantity()))
+                .andExpect(jsonPath("$.lineItems[0].rate").value(lineItem.getRate()))
+                .andExpect(jsonPath("$.lineItems[0].fee").value(54))
+                .andExpect(jsonPath("$.lineItems[1].id").exists())
+                .andExpect(jsonPath("$.lineItems[1].description").value(lineItem2.getDescription()))
+                .andExpect(jsonPath("$.lineItems[1].quantity").value(lineItem2.getQuantity()))
+                .andExpect(jsonPath("$.lineItems[1].rate").value(lineItem2.getRate()))
+                .andExpect(jsonPath("$.lineItems[1].fee").value(46))
+                .andExpect(jsonPath("$.lineItems[2].id").exists())
+                .andExpect(jsonPath("$.lineItems[2].description").value(lineItem3.getDescription()))
+                .andExpect(jsonPath("$.lineItems[2].quantity").value(lineItem3.getQuantity()))
+                .andExpect(jsonPath("$.lineItems[2].rate").value(lineItem3.getRate()))
+                .andExpect(jsonPath("$.lineItems[2].fee").value(50));
 
     }
 
@@ -237,7 +236,7 @@ public class InvoiceControllerIntTest {
     @DisplayName("Integration test throws exception when trying to modify paid invoice ")
     public void test_modifyPaidInvoice_throwsInvoiceModifyException() throws Exception {
 
-        Invoice invoice = Invoice.builder().author("Gokul").lineItem(new ArrayList<>()).status(StatusEnum.PAID).company("Cognizant").build();
+        Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.PAID).company("Cognizant").build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
 
@@ -254,7 +253,7 @@ public class InvoiceControllerIntTest {
     @DisplayName("Integration test to modify unpaid invoice")
     public void test_modifyUnPaidInvoice_withPaidStatus() throws Exception {
 
-        Invoice invoice = Invoice.builder().author("Gokul").lineItem(new ArrayList<>()).status(StatusEnum.UNPAID).company("Cognizant").build();
+        Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.UNPAID).company("Cognizant").build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
 
@@ -263,7 +262,8 @@ public class InvoiceControllerIntTest {
         mvc.perform(patch("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(existingInvoice)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(StatusEnum.PAID.toString()));
+                .andExpect(jsonPath("$.status").value(StatusEnum.PAID.toString()))
+                .andExpect(jsonPath("$.modifiedDate").exists());
     }
 
 

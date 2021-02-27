@@ -28,11 +28,11 @@ public class InvoiceTestHelper {
     }
 
     public static Invoice getInvoiceWithOneLineItem() {
-        return Invoice.builder().author("Gokul").company("Cognizant").lineItem(Collections.singletonList(getLineItem())).build();
+        return Invoice.builder().author("Gokul").company("Cognizant").lineItems(Collections.singletonList(getLineItem())).build();
     }
 
     public static Invoice getInvoiceWithTwoLineItem() {
-        return Invoice.builder().author("Gokul").company("Cognizant").lineItem(getLineItemListWithTwoLineItem()).build();
+        return Invoice.builder().author("Gokul").company("Cognizant").lineItems(getLineItemListWithTwoLineItem()).build();
     }
 
 
@@ -42,7 +42,7 @@ public class InvoiceTestHelper {
                 .author("Gokul")
                 .company("Cognizant")
                 .status(StatusEnum.UNPAID)
-                .lineItem(Collections.singletonList(getLineItem()))
+                .lineItems(Collections.singletonList(getLineItem()))
                 .build();
     }
 
@@ -52,7 +52,7 @@ public class InvoiceTestHelper {
                 .author("Jenn")
                 .company("Cognizant")
                 .status(StatusEnum.PAID)
-                .lineItem(Collections.singletonList(getLineItem()))
+                .lineItems(Collections.singletonList(getLineItem()))
                 .build();
     }
 }
