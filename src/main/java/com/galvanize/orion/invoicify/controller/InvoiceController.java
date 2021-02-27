@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import java.util.List;
@@ -28,8 +29,8 @@ public class InvoiceController {
 
 
     @PutMapping("/invoice/{invoiceId}")
-    public Invoice addLineItem(@PathVariable UUID invoiceId, @RequestBody LineItem lineItem) throws InvoiceNotFoundException {
-        return invoiceService.addLineItemToInvoice(invoiceId, lineItem);
+    public Invoice addLineItem(@PathVariable UUID invoiceId, @RequestBody List<LineItem> lineItemList) throws InvoiceNotFoundException {
+        return invoiceService.addLineItemToInvoice(invoiceId, lineItemList);
     }
 
 

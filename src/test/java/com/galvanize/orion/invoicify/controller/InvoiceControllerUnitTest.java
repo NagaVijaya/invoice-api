@@ -1,6 +1,7 @@
 package com.galvanize.orion.invoicify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
@@ -12,11 +13,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -159,10 +158,26 @@ public class InvoiceControllerUnitTest {
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
         invoice.setLineItem(Collections.singletonList(lineItem));
         when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenReturn(invoice);
-        mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(lineItem)))
+        mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Collections.singletonList(lineItem))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
                 .andExpect(jsonPath("$.company").value(invoice.getCompany()));
+
+        verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
+    }
+
+    @Test
+    public void addMultipleLineItemToExistingInvoice() throws Exception {
+        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(new ArrayList<>()).build();
+        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
+        LineItem lineItem2 = InvoiceTestHelper.getLineItem2();
+        invoice.setLineItem(Arrays.asList(lineItem, lineItem2));
+        when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenReturn(invoice);
+        mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Arrays.asList(lineItem, lineItem2))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
+                .andExpect(jsonPath("$.company").value(invoice.getCompany()))
+                .andExpect(jsonPath("$.lineItem", hasSize(2)));
 
         verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
     }
@@ -173,7 +188,7 @@ public class InvoiceControllerUnitTest {
         when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenThrow(InvoiceNotFoundException.class);
 
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2").contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(lineItem2)))
+                .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Invoice does not exist"));
 

@@ -46,7 +46,7 @@ public class InvoiceService {
         return page.getContent();
     }
 
-    public Invoice addLineItemToInvoice(UUID invoiceId, LineItem lineItem) throws InvoiceNotFoundException {
+    public Invoice addLineItemToInvoice(UUID invoiceId, List<LineItem> lineItemList) throws InvoiceNotFoundException {
 
         Optional<Invoice> invoice = invoiceRepository.findById(invoiceId);
         if (!invoice.isPresent()) {
@@ -55,11 +55,15 @@ public class InvoiceService {
 
         Invoice existingInvoice = invoice.get();
 
-        double itemCost = lineItem.getQuantity() * lineItem.getRate();
-        lineItem.setFee(itemCost);
+        double invoiceTotalCost = existingInvoice.getTotalCost();
+        for(LineItem lineItem: lineItemList){
+            double itemCost = lineItem.getQuantity() * lineItem.getRate();
+            lineItem.setFee(itemCost);
+            invoiceTotalCost += itemCost;
+            existingInvoice.getLineItem().add(lineItem);
+        }
 
-        existingInvoice.getLineItem().add(lineItem);
-        existingInvoice.setTotalCost(existingInvoice.getTotalCost() + itemCost);
+        existingInvoice.setTotalCost(invoiceTotalCost);
 
         return invoiceRepository.save(existingInvoice);
     }
