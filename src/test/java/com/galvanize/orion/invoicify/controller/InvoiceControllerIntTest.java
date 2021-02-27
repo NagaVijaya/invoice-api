@@ -1,10 +1,10 @@
 package com.galvanize.orion.invoicify.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
+import com.galvanize.orion.invoicify.testUtilities.InvoiceData;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -139,29 +137,42 @@ public class InvoiceControllerIntTest {
     }
 
     @Test
-    public void test_getAllInvoices_returns_multipleInvoice() throws Exception {
-
-        List<LineItem> lineItemList = new ArrayList<>();
-        lineItemList.add(LineItem.builder()
-                .description("lineitem1")
-                .build());
-        Invoice invoice01 = Invoice.builder()
-                .author("Peter")
-                .lineItem(lineItemList)
-                .build();
-        Invoice invoice02 = Invoice.builder()
-                .author("Naga")
-                .build();
-        invoiceRepository.save(invoice01);
-        invoiceRepository.save(invoice02);
+    @DisplayName("Integration test for GET invoices when database is empty")
+    public void test_getAllInvoicesWhenEmpty_returnsEmptyList() throws Exception {
 
         mvc.perform(get("/api/v1/invoices"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].author").value("Peter"))
-                .andExpect(jsonPath("$[0].lineItem[0].description").value("lineitem1"))
-                .andExpect(jsonPath("$[1].author").value("Naga"));
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    @DisplayName("Integration test for GET invoices with paging and sorting by created date in ascending order")
+    public void test_getAllInvoicesByPageNumber_returnsInvoicesByPageNumberAndSortedByCreateDate() throws Exception {
+
+
+        List<Invoice> invoiceList = InvoiceData.GenerateInvoices();
+        invoiceList.forEach(invoice -> invoiceRepository.save(invoice));
+
+        mvc.perform(get("/api/v1/invoices"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(10))
+                .andExpect(jsonPath("$[0].author").value("Author20"))
+                .andExpect(jsonPath("$[9].author").value("Author11"));
+
+        mvc.perform(get("/api/v1/invoices?page=1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(10))
+                .andExpect(jsonPath("$[0].author").value("Author10"))
+                .andExpect(jsonPath("$[9].author").value("Author01"));
+
+        mvc.perform(get("/api/v1/invoices?page=2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].author").value("Author00"));
     }
 
     @Test
