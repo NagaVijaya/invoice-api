@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -117,7 +118,7 @@ public class InvoiceControllerIntTest {
         LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
 
         mvc.perform(put("/api/v1/invoice/"+existingInvoice.getId()).contentType(MediaType.APPLICATION_JSON)
-                    .content(mapper.writeValueAsString(lineItem2)))
+                    .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(existingInvoice.getId().toString()))
                 .andExpect(jsonPath("$.author").value(existingInvoice.getAuthor()))
@@ -169,7 +170,7 @@ public class InvoiceControllerIntTest {
         LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
 
         mvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2").contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(lineItem2)))
+                .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Invoice does not exist"));
 

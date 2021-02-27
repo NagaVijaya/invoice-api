@@ -12,10 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -152,7 +149,7 @@ public class InvoiceControllerUnitTest {
         when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenThrow(InvoiceNotFoundException.class);
 
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2").contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(lineItem2)))
+                .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Invoice does not exist"));
 
