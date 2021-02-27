@@ -6,6 +6,7 @@ import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -36,7 +37,7 @@ public class InvoiceService {
 
     public List<Invoice> getAllInvoices(Integer pageNumber) {
 
-        Page<Invoice> page = invoiceRepository.findAll(PageRequest.of(pageNumber, 10));
+        Page<Invoice> page = invoiceRepository.findAll(PageRequest.of(pageNumber, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
 
         return page.getContent();
     }

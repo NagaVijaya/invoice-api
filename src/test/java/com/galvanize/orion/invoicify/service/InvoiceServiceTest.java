@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.*;
 
@@ -104,7 +105,7 @@ public class InvoiceServiceTest {
         List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(0, result.size());
 
-        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10));
+        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
     }
 
     @Test
@@ -119,7 +120,7 @@ public class InvoiceServiceTest {
         List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(1, result.size());
 
-        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10));
+        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
 
     }
 
@@ -138,7 +139,7 @@ public class InvoiceServiceTest {
         assertEquals("Peter", result.get(0).getAuthor());
         assertEquals("Naga", result.get(1).getAuthor());
 
-        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10));
+        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
 
     }
 
@@ -157,9 +158,7 @@ public class InvoiceServiceTest {
         assertEquals("Peter", result.get(0).getAuthor());
         assertEquals("Naga", result.get(1).getAuthor());
 
-        verify(invoiceRepository).findAll(PageRequest.of(1, 10
-                //, Sort.by(Sort.Direction.ASC, "createdDate")
-        ));
+        verify(invoiceRepository).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
 
     }
 }
