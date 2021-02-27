@@ -67,4 +67,8 @@ public class InvoiceService {
 
         return invoiceRepository.save(existingInvoice);
     }
+
+    public void deleteInvoice(UUID invoiceId) {
+        invoiceRepository.deleteById(invoiceId);
+    }
 }

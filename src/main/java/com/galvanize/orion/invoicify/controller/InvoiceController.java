@@ -38,4 +38,10 @@ public class InvoiceController {
     public List<Invoice> getAllInvoices(@RequestParam(defaultValue = Constants.DEFAULT_PAGE_INDEX) Integer page){
         return invoiceService.getAllInvoices(page);
     }
+
+    @DeleteMapping("/invoice/{invoiceId}")
+    public void deleteInvoice(@PathVariable UUID invoiceId){
+        invoiceService.deleteInvoice(invoiceId);
+
+    }
 }

@@ -194,4 +194,13 @@ public class InvoiceControllerUnitTest {
 
     }
 
+    @Test
+    public void test_delete_invoice() throws Exception {
+
+        mockMvc.perform(delete("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2"))
+                .andExpect(status().isOk());
+
+        verify(invoiceService, times(1)).deleteInvoice(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+    }
+
 }

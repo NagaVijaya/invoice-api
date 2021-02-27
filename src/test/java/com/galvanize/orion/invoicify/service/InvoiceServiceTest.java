@@ -188,4 +188,13 @@ public class InvoiceServiceTest {
         verify(invoiceRepository, times(1)).findById(any(UUID.class));
 
     }
+
+    @Test
+    public void testDeleteInvoice(){
+        UUID invoiceId = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2");
+
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        invoiceService.deleteInvoice(invoiceId);
+        verify(invoiceRepository, times(1)).deleteById(invoiceId);
+    }
 }
