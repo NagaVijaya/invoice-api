@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.4.3'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+	id 'jacoco'
 }
 
 group = 'com.galvanize.orion'
@@ -31,4 +32,32 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestReport {
+	dependsOn test // tests are required to run before generating the report
+	reports {
+		xml.enabled false
+		csv.enabled false
+		html.destination file("${buildDir}/jacocoHtml")
+	}
+}
+
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			enabled = true
+			excludes = [
+					'com.galvanize.orion.invoicify.entities.*',
+					'com.galvanize.orion.invoicify.repository.*',
+					'com.galvanize.orion.invoicify.utilities.Constants',
+					'com.galvanize.orion.invoicify.InvoicifyApplication',
+			]
+			limit {
+				counter = 'LINE'
+				minimum = 0.9
+			}
+		}
+	}
 }
