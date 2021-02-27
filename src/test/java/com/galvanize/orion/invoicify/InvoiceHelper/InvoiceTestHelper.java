@@ -7,6 +7,7 @@ import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 public class InvoiceTestHelper {
 
@@ -37,6 +38,7 @@ public class InvoiceTestHelper {
 
     public static Invoice getUnpaidInvoice() {
         return Invoice.builder()
+                .id(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3"))
                 .author("Gokul")
                 .company("Cognizant")
                 .status(StatusEnum.UNPAID)
@@ -46,6 +48,7 @@ public class InvoiceTestHelper {
 
     public static Invoice getPaidInvoice() {
         return Invoice.builder()
+                .id(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b4"))
                 .author("Jenn")
                 .company("Cognizant")
                 .status(StatusEnum.PAID)

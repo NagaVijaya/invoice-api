@@ -34,7 +34,7 @@ public class InvoiceController {
     }
 
     @PatchMapping("/invoice")
-    public Invoice updateInvoice(@RequestBody Invoice invoice) throws InvoicePaidException {
+    public Invoice updateInvoice(@RequestBody Invoice invoice) throws InvoicePaidException, InvoiceNotFoundException {
         return invoiceService.updateInvoice(invoice);
     }
 
