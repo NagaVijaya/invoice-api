@@ -4,6 +4,7 @@ import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.service.InvoiceService;
+import com.galvanize.orion.invoicify.utilities.Constants;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +33,9 @@ public class InvoiceController {
         return invoiceService.addLineItemToInvoice(invoiceId, lineItemList);
     }
 
+
     @GetMapping("/invoices")
-    public List<Invoice> getAllInvoices(){
-        return invoiceService.getAllInvoices();
+    public List<Invoice> getAllInvoices(@RequestParam(defaultValue = Constants.DEFAULT_PAGE_INDEX) Integer page){
+        return invoiceService.getAllInvoices(page);
     }
 }

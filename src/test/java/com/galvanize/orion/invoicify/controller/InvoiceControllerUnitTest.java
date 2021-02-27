@@ -63,12 +63,12 @@ public class InvoiceControllerUnitTest {
     @Test
     public void test_getAllInvoices_returns_emptyList() throws Exception {
         List<Invoice> invoiceList = new ArrayList<>();
-        when(invoiceService.getAllInvoices()).thenReturn(invoiceList);
+        when(invoiceService.getAllInvoices(0)).thenReturn(invoiceList);
         mockMvc.perform(get("/api/v1/invoices"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$.length()").value(0));
-        verify(invoiceService, times(1)).getAllInvoices();
+        verify(invoiceService, times(1)).getAllInvoices(0);
     }
 
     @Test
@@ -77,14 +77,14 @@ public class InvoiceControllerUnitTest {
         invoiceList.add(Invoice.builder()
                 .author("Peter")
                 .build());
-        when(invoiceService.getAllInvoices()).thenReturn(invoiceList);
+        when(invoiceService.getAllInvoices(0)).thenReturn(invoiceList);
 
         mockMvc.perform(get("/api/v1/invoices"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].author").value("Peter"));
-        verify(invoiceService, times(1)).getAllInvoices();
+        verify(invoiceService, times(1)).getAllInvoices(0);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class InvoiceControllerUnitTest {
         invoiceList.add(Invoice.builder()
                 .author("Naga")
                 .build());
-        when(invoiceService.getAllInvoices()).thenReturn(invoiceList);
+        when(invoiceService.getAllInvoices(0)).thenReturn(invoiceList);
 
         mockMvc.perform(get("/api/v1/invoices"))
                 .andExpect(status().isOk())
@@ -104,7 +104,7 @@ public class InvoiceControllerUnitTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].author").value("Peter"))
                 .andExpect(jsonPath("$[1].author").value("Naga"));
-        verify(invoiceService, times(1)).getAllInvoices();
+        verify(invoiceService, times(1)).getAllInvoices(0);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class InvoiceControllerUnitTest {
                 .author("Peter")
                 .lineItem(lineItemList)
                 .build());
-        when(invoiceService.getAllInvoices()).thenReturn(invoiceList);
+        when(invoiceService.getAllInvoices(0)).thenReturn(invoiceList);
 
         mockMvc.perform(get("/api/v1/invoices"))
                 .andExpect(status().isOk())
@@ -127,9 +127,30 @@ public class InvoiceControllerUnitTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].author").value("Peter"))
                 .andExpect(jsonPath("$[0].lineItem[0].description").value("lineitem1"));
-        verify(invoiceService, times(1)).getAllInvoices();
+        verify(invoiceService, times(1)).getAllInvoices(0);
 
     }
+
+    @Test
+    public void test_getAllInvoices_handlesPageParameter() throws Exception {
+        List<Invoice> invoiceList = new ArrayList<>();
+        invoiceList.add(Invoice.builder()
+                .author("Peter")
+                .build());
+        invoiceList.add(Invoice.builder()
+                .author("Naga")
+                .build());
+        when(invoiceService.getAllInvoices(1)).thenReturn(invoiceList);
+
+        mockMvc.perform(get("/api/v1/invoices?page=1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].author").value("Peter"))
+                .andExpect(jsonPath("$[1].author").value("Naga"));
+        verify(invoiceService, times(1)).getAllInvoices(1);
+    }
+
+
 
     @Test
     public void addLineItemToExistingInvoice() throws Exception {
