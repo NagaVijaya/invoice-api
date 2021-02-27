@@ -2,6 +2,7 @@ package com.galvanize.orion.invoicify.controller;
 
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
+import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.service.InvoiceService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,8 +27,7 @@ public class InvoiceController {
 
 
     @PutMapping("/invoice/{invoiceId}")
-
-    public Invoice addLineItem(@PathVariable UUID invoiceId, @RequestBody LineItem lineItem){
+    public Invoice addLineItem(@PathVariable UUID invoiceId, @RequestBody LineItem lineItem) throws InvoiceNotFoundException {
         return invoiceService.addLineItemToInvoice(invoiceId, lineItem);
     }
 

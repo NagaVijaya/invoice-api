@@ -3,6 +3,7 @@ package com.galvanize.orion.invoicify.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
+import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.service.InvoiceService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -164,6 +165,18 @@ public class InvoiceControllerUnitTest {
                 .andExpect(jsonPath("$.company").value(invoice.getCompany()));
 
         verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
+    }
+
+    @Test
+    public void test_addLineItem_exceptionThrownWhenInvoiceDoesNotExist() throws Exception {
+        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenThrow(InvoiceNotFoundException.class);
+
+        mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(lineItem2)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Invoice does not exist"));
+
     }
 
 }

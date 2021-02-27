@@ -1,5 +1,6 @@
 package com.galvanize.orion.invoicify.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
@@ -164,6 +165,15 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$[1].author").value("Naga"));
     }
 
+    @Test
+    public void test_addLineItem_exceptionThrownWhenInvoiceDoesNotExist() throws Exception {
+        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
 
+        mvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(lineItem2)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Invoice does not exist"));
+
+    }
 
 }
