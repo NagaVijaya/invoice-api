@@ -1,5 +1,6 @@
 package com.galvanize.orion.invoicify.entities;
 
+import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import lombok.*;
 
 import javax.persistence.*;
@@ -21,6 +22,7 @@ public class Invoice {
     private List<LineItem> lineItem;
     private String company;
     private double totalCost;
+    private StatusEnum status;
     private String author;
     private Date createdDate;
 }

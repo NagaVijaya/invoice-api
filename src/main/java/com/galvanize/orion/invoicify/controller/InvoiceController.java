@@ -3,6 +3,7 @@ package com.galvanize.orion.invoicify.controller;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.service.InvoiceService;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import lombok.AllArgsConstructor;
@@ -27,10 +28,14 @@ public class InvoiceController {
         return invoiceService.createInvoice(invoice);
     }
 
-
     @PutMapping("/invoice/{invoiceId}")
     public Invoice addLineItem(@PathVariable UUID invoiceId, @RequestBody List<LineItem> lineItemList) throws InvoiceNotFoundException {
         return invoiceService.addLineItemToInvoice(invoiceId, lineItemList);
+    }
+
+    @PatchMapping("/invoice")
+    public Invoice updateInvoice(@RequestBody Invoice invoice) throws InvoicePaidException, InvoiceNotFoundException {
+        return invoiceService.updateInvoice(invoice);
     }
 
 
