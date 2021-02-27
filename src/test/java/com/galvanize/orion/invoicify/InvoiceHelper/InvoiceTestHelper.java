@@ -2,6 +2,7 @@ package com.galvanize.orion.invoicify.InvoiceHelper;
 
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
+import com.galvanize.orion.invoicify.utilities.StatusEnum;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,4 +35,12 @@ public class InvoiceTestHelper {
     }
 
 
+    public static Invoice getUnpaidInvoice() {
+        return Invoice.builder()
+                .author("Gokul")
+                .company("Cognizant")
+                .status(StatusEnum.UNPAID)
+                .lineItem(Collections.singletonList(getLineItem()))
+                .build();
+    }
 }

@@ -27,10 +27,14 @@ public class InvoiceController {
         return invoiceService.createInvoice(invoice);
     }
 
-
     @PutMapping("/invoice/{invoiceId}")
     public Invoice addLineItem(@PathVariable UUID invoiceId, @RequestBody List<LineItem> lineItemList) throws InvoiceNotFoundException {
         return invoiceService.addLineItemToInvoice(invoiceId, lineItemList);
+    }
+
+    @PatchMapping("/invoice")
+    public Invoice updateInvoice(@RequestBody Invoice invoice) throws InvoiceNotFoundException {
+        return invoiceService.updateInvoice(invoice);
     }
 
 

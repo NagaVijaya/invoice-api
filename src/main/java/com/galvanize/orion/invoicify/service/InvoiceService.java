@@ -67,4 +67,8 @@ public class InvoiceService {
 
         return invoiceRepository.save(existingInvoice);
     }
+
+    public Invoice updateInvoice(Invoice invoice) {
+        return null;
+    }
 }
