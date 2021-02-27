@@ -4,8 +4,10 @@ import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
+import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
+import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -69,6 +71,20 @@ public class InvoiceService {
         existingInvoice.setTotalCost(invoiceTotalCost);
 
         return invoiceRepository.save(existingInvoice);
+    }
+
+    public Invoice updateInvoice(Invoice invoice) throws InvoicePaidException, InvoiceNotFoundException {
+        Optional<Invoice> existingOptInvoice = invoiceRepository.findById(invoice.getId());
+        if (!existingOptInvoice.isPresent()) {
+            throw new InvoiceNotFoundException("Invoice does not exist");
+        }
+
+        Invoice existingInvoice = existingOptInvoice.get();
+        if(existingInvoice.getStatus().equals(StatusEnum.PAID)){
+            throw new InvoicePaidException("Invoice paid, cannot be modified");
+        }
+
+        return invoiceRepository.save(invoice);
     }
 
     public void deleteInvoice(UUID invoiceId) throws InvoiceNotStaleException {

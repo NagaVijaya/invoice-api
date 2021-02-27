@@ -5,7 +5,9 @@ import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
+import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
+import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -188,6 +190,45 @@ public class InvoiceServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
+        verify(invoiceRepository, times(1)).findById(any(UUID.class));
+
+    }
+
+    @Test
+    public void testUpdateUnPaidInvoice_toPaidStatus() throws InvoicePaidException, InvoiceNotFoundException {
+        Invoice existingInvoice = InvoiceTestHelper.getUnpaidInvoice();
+        Optional<Invoice> existingOptInvoice = Optional.of(existingInvoice);
+        Invoice modifiedInvoice = InvoiceTestHelper.getPaidInvoice();
+
+        when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingOptInvoice);
+        when(invoiceRepository.save(any())).thenReturn(modifiedInvoice);
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+
+        Invoice actualInvoice = invoiceService.updateInvoice(existingInvoice);
+
+        assertEquals(actualInvoice.getStatus(), StatusEnum.PAID);
+        verify(invoiceRepository, times(1)).findById(any(UUID.class));
+
+        verify(invoiceRepository, times(1)).save(any());
+
+    }
+
+    @Test
+    public void testUpdatePaidInvoice_throwsException() throws InvoicePaidException, InvoiceNotFoundException {
+        Invoice existingInvoice = InvoiceTestHelper.getPaidInvoice();
+        Optional<Invoice> existingOptInvoice = Optional.of(existingInvoice);
+
+        when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingOptInvoice);
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+
+        Exception exception = assertThrows(InvoicePaidException.class, () -> {
+            invoiceService.updateInvoice(existingInvoice);;
+        });
+
+        String expectedMessage = "Invoice paid, cannot be modified";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
         verify(invoiceRepository, times(1)).findById(any(UUID.class));
 
     }
