@@ -138,7 +138,7 @@ public class InvoiceControllerUnitTest {
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
         invoice.setLineItem(Collections.singletonList(lineItem));
         when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenReturn(invoice);
-        mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(lineItem)))
+        mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Collections.singletonList(lineItem))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
                 .andExpect(jsonPath("$.company").value(invoice.getCompany()));

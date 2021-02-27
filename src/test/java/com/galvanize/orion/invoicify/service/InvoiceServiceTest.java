@@ -81,7 +81,7 @@ public class InvoiceServiceTest {
         // set up list of invoices to add
 
 
-        Invoice actualInvoice = invoiceService.addLineItemToInvoice(uid, lineItem2);
+        Invoice actualInvoice = invoiceService.addLineItemToInvoice(uid, Arrays.asList(lineItem2));
 
         assertEquals(expectedInvoice.getAuthor(), actualInvoice.getAuthor());
         assertEquals(expectedInvoice.getCompany(), actualInvoice.getCompany());
@@ -149,7 +149,7 @@ public class InvoiceServiceTest {
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingInvoice);
 
         Exception exception = assertThrows(InvoiceNotFoundException.class, () -> {
-            invoiceService.addLineItemToInvoice(uid, lineItem2);
+            invoiceService.addLineItemToInvoice(uid, Arrays.asList(lineItem2));
         });
 
         String expectedMessage = "Invoice does not exist";
