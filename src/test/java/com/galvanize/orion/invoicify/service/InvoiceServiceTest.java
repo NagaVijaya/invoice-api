@@ -234,7 +234,7 @@ public class InvoiceServiceTest {
     }
 
     @Test
-    public void testDeleteInvoice() throws InvoiceNotStaleException {
+    public void testDeleteInvoice() throws InvoiceNotStaleException, InvoiceNotFoundException {
         Invoice invoice = InvoiceTestHelper.getInvoiceWithOneLineItem();
         invoice.setId(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
         LocalDate createdDateLocal = LocalDate.now();
@@ -266,5 +266,20 @@ public class InvoiceServiceTest {
             invoiceService.deleteInvoice(invoice.getId())
         );
         verify(invoiceRepository, times(1)).findById(invoice.getId());
+    }
+
+    @Test
+    public void testDeleteInvoice_whenInvoiceDoesNotExist_ThrowInvoiceDoesNotExistException() {
+
+        UUID invoiceId = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2");
+
+        when(invoiceRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+
+        assertThrows(InvoiceNotFoundException.class,() ->
+                invoiceService.deleteInvoice(invoiceId)
+        );
+        verify(invoiceRepository, times(1)).findById(invoiceId);
     }
 }

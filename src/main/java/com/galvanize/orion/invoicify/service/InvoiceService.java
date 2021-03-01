@@ -87,8 +87,14 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
-    public void deleteInvoice(UUID invoiceId) throws InvoiceNotStaleException {
-        Invoice invoice = invoiceRepository.findById(invoiceId).get();
+    public void deleteInvoice(UUID invoiceId) throws InvoiceNotStaleException, InvoiceNotFoundException {
+        Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
+
+        if (!optionalInvoice.isPresent()) {
+            throw new InvoiceNotFoundException("Invoice does not exist");
+        }
+
+        Invoice invoice = optionalInvoice.get();
         LocalDate localYearBackDate = LocalDate.now().minusYears(1);
 
         LocalDate invoiceLocalDate = invoice.getCreatedDate().toInstant()
