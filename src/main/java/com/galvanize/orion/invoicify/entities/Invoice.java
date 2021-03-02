@@ -2,6 +2,8 @@ package com.galvanize.orion.invoicify.entities;
 
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -24,5 +26,6 @@ public class Invoice {
     private double totalCost;
     private StatusEnum status;
     private String author;
+    @CreatedDate
     private Date createdDate;
 }

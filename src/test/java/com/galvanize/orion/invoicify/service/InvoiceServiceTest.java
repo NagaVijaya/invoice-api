@@ -236,7 +236,7 @@ public class InvoiceServiceTest {
     @Test
     public void testDeleteInvoice() throws InvoiceNotStaleException, InvoiceNotFoundException {
         Invoice invoice = InvoiceTestHelper.getInvoiceWithOneLineItem();
-        invoice.setId(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+        invoice.setId(UUID.randomUUID());
         LocalDate createdDateLocal = LocalDate.now();
         createdDateLocal = createdDateLocal.minusYears(1);
         invoice.setCreatedDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()));
@@ -253,7 +253,7 @@ public class InvoiceServiceTest {
     @Test
     public void testDeleteInvoice_whenInvoiceLessThanOneYearOld_ThrowInvoiceNotStaleException(){
        Invoice invoice = InvoiceTestHelper.getInvoiceWithOneLineItem();
-       invoice.setId(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+       invoice.setId(UUID.randomUUID());
        LocalDate createdDateLocal = LocalDate.now();
        createdDateLocal = createdDateLocal.minusYears(1).plusDays(1);
        invoice.setCreatedDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()));
@@ -271,7 +271,7 @@ public class InvoiceServiceTest {
     @Test
     public void testDeleteInvoice_whenInvoiceDoesNotExist_ThrowInvoiceDoesNotExistException() {
 
-        UUID invoiceId = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2");
+        UUID invoiceId = UUID.randomUUID();
 
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 

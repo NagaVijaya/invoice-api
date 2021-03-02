@@ -233,34 +233,36 @@ public class InvoiceControllerUnitTest {
 
     @Test
     public void test_delete_invoice() throws Exception {
-        mockMvc.perform(delete("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2"))
+        UUID invoiceId = UUID.randomUUID();
+        mockMvc.perform(delete("/api/v1/invoice/" + invoiceId.toString()))
                 .andExpect(status().isOk());
 
-        verify(invoiceService, times(1)).deleteInvoice(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+        verify(invoiceService, times(1)).deleteInvoice(invoiceId);
     }
 
     @Test
     public void test_delete_invoice_whenInvoiceLessThanOneYearOld_ThrowInvoiceNotStaleException() throws Exception {
 
         doThrow(new InvoiceNotStaleException()).when(invoiceService).deleteInvoice(any(UUID.class));
+        UUID invoiceId = UUID.randomUUID();
 
-        mockMvc.perform(delete("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2"))
+        mockMvc.perform(delete("/api/v1/invoice/" + invoiceId.toString()))
                 .andExpect(status().isNotAcceptable())
                 .andExpect(jsonPath("$.message").value("Invoice is less than 1 year old, can't delete!"));
 
-        verify(invoiceService, times(1)).deleteInvoice(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+        verify(invoiceService, times(1)).deleteInvoice(invoiceId);
     }
 
     @Test
-    public void test_delete_invoice_whenDoesNotExist_ThrowInvoiceNotStaleException() throws Exception {
+    public void test_delete_invoice_whenDoesNotExist_ThrowInvoiceNotFoundException() throws Exception {
 
         doThrow(new InvoiceNotFoundException("Invoice does not exist")).when(invoiceService).deleteInvoice(any(UUID.class));
-
-        mockMvc.perform(delete("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2"))
+        UUID invoiceId = UUID.randomUUID();
+        mockMvc.perform(delete("/api/v1/invoice/" + invoiceId.toString()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Invoice does not exist"));
 
-        verify(invoiceService, times(1)).deleteInvoice(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+        verify(invoiceService, times(1)).deleteInvoice(invoiceId);
     }
 
 
