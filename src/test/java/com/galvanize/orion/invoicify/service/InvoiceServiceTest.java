@@ -64,7 +64,7 @@ public class InvoiceServiceTest {
     }
 
     @Test
-    public void testAddLineItemToExistingInvoice() throws InvoiceNotFoundException {
+    public void testAddLineItemToExistingInvoice() throws InvoiceNotFoundException, InvoicePaidException {
 
         UUID uid = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3");
 

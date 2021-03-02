@@ -233,6 +233,24 @@ public class InvoiceControllerIntTest {
     }
 
     @Test
+    @DisplayName("Integration test throws exception when trying to add line item to non existent invoice ")
+    public void test_addLineItem_exceptionThrownWhenInvoiceIsPaid() throws Exception {
+        Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.PAID).company("Cognizant").build();
+        MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
+                .andReturn();
+
+        Invoice existingInvoice = mapper.readValue(result.getResponse().getContentAsString(), Invoice.class);
+
+        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+
+        mvc.perform(put("/api/v1/invoice/" + existingInvoice.getId()).contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
+                .andExpect(status().isNotModified())
+                .andExpect(jsonPath("$.message").value("Invoice paid, cannot be modified"));
+
+    }
+
+    @Test
     @DisplayName("Integration test throws exception when trying to modify paid invoice ")
     public void test_modifyPaidInvoice_throwsInvoiceModifyException() throws Exception {
 
@@ -265,6 +283,5 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$.status").value(StatusEnum.PAID.toString()))
                 .andExpect(jsonPath("$.modifiedDate").exists());
     }
-
 
 }

@@ -48,14 +48,9 @@ public class InvoiceService {
         return page.getContent();
     }
 
-    public Invoice addLineItemToInvoice(UUID invoiceId, List<LineItem> lineItemList) throws InvoiceNotFoundException {
+    public Invoice addLineItemToInvoice(UUID invoiceId, List<LineItem> lineItemList) throws InvoiceNotFoundException, InvoicePaidException {
 
-        Optional<Invoice> invoice = invoiceRepository.findById(invoiceId);
-        if (!invoice.isPresent()) {
-            throw new InvoiceNotFoundException("Invoice does not exist");
-        }
-
-        Invoice existingInvoice = invoice.get();
+        Invoice existingInvoice = checkValidInvoice(invoiceId);
 
         double invoiceTotalCost = existingInvoice.getTotalCost();
         for(LineItem lineItem: lineItemList){
@@ -71,16 +66,21 @@ public class InvoiceService {
     }
 
     public Invoice updateInvoice(Invoice invoice) throws InvoicePaidException, InvoiceNotFoundException {
-        Optional<Invoice> existingOptInvoice = invoiceRepository.findById(invoice.getId());
+        checkValidInvoice(invoice.getId());
+        invoice.setModifiedDate(new Date());
+        return invoiceRepository.save(invoice);
+    }
+
+    private Invoice checkValidInvoice(UUID invoiceId) throws InvoiceNotFoundException, InvoicePaidException {
+        Optional<Invoice> existingOptInvoice = invoiceRepository.findById(invoiceId);
         if (!existingOptInvoice.isPresent()) {
             throw new InvoiceNotFoundException("Invoice does not exist");
         }
 
         Invoice existingInvoice = existingOptInvoice.get();
-        if(existingInvoice.getStatus().equals(StatusEnum.PAID)){
+        if(StatusEnum.PAID.equals(existingInvoice.getStatus())){
             throw new InvoicePaidException("Invoice paid, cannot be modified");
         }
-        invoice.setModifiedDate(new Date());
-        return invoiceRepository.save(invoice);
+        return existingInvoice;
     }
 }

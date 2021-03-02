@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @Data
 @Entity
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Invoice {
@@ -26,4 +25,8 @@ public class Invoice {
     private String author;
     private Date createdDate;
     private Date modifiedDate;
+
+    public Invoice(){
+        status = StatusEnum.UNPAID;
+    }
 }
