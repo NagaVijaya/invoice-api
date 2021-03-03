@@ -74,8 +74,8 @@ public class InvoiceServiceTest {
         assertEquals(expectedInvoice.getTotalCost(), actualInvoice.getTotalCost());
         assertEquals(expectedInvoice.getCreatedDate(), actualInvoice.getCreatedDate());
         assertEquals(expectedInvoice.getLineItems().size(), 2);
-        assertEquals(expectedInvoice.getLineItems().get(0).getFee(), 54);
-        assertEquals(expectedInvoice.getLineItems().get(1).getFee(), 46);
+        assertEquals(expectedInvoice.getLineItems().get(0).getFee(), BigDecimal.valueOf(54.0));
+        assertEquals(expectedInvoice.getLineItems().get(1).getFee(), BigDecimal.valueOf(46.0));
         verify(invoiceRepository, times(1)).save(any());
     }
 
@@ -93,7 +93,7 @@ public class InvoiceServiceTest {
         LineItem lineItem2 = InvoiceTestHelper.getLineItem2();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(lineItemList).build();
+        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(lineItemList).totalCost(BigDecimal.valueOf(0)).build();
         Optional<Invoice> existingInvoice1 = Optional.of(invoice);
 
         List<LineItem> lineItemList1 = new ArrayList<>();
@@ -120,8 +120,8 @@ public class InvoiceServiceTest {
         assertEquals(expectedInvoice.getTotalCost(), actualInvoice.getTotalCost());
         assertEquals(expectedInvoice.getCreatedDate(), actualInvoice.getCreatedDate());
         assertEquals(expectedInvoice.getLineItems().size(), 2);
-        assertEquals(expectedInvoice.getLineItems().get(0).getFee(), 54);
-        assertEquals(expectedInvoice.getLineItems().get(1).getFee(), 46);
+        assertEquals(expectedInvoice.getLineItems().get(0).getFee(), BigDecimal.valueOf(54));
+        assertEquals(expectedInvoice.getLineItems().get(1).getFee(), BigDecimal.valueOf(46.0));
         verify(invoiceRepository, times(1)).save(any());
         verify(invoiceRepository, times(1)).findById(any(UUID.class));
 

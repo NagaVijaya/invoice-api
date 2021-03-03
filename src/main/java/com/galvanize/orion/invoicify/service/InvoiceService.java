@@ -54,15 +54,10 @@ public class InvoiceService {
         Invoice existingInvoice = checkValidInvoice(invoiceId);
         List <LineItem> existingInvoiceLineItems = existingInvoice.getLineItems();
         existingInvoiceLineItems.addAll(lineItemList);
-        BigDecimal invoiceTotalCost = existingInvoice.getTotalCost();
-        for(LineItem lineItem: lineItemList){
-            BigDecimal itemCost =  lineItem.getRate().multiply(BigDecimal.valueOf(lineItem.getQuantity()));
-            lineItem.setFee(itemCost);
-            invoiceTotalCost = invoiceTotalCost.add(itemCost);
-
-        }
         existingInvoice.setLineItems(existingInvoiceLineItems);
-        existingInvoice.setTotalCost(invoiceTotalCost);
+
+        calculateLineItemsTotalCost(existingInvoice);
+
         existingInvoice.setModifiedDate(new Date());
         return invoiceRepository.save(existingInvoice);
     }
@@ -80,11 +75,23 @@ public class InvoiceService {
         }
 
         Invoice existingInvoice = existingOptInvoice.get();
-        if(StatusEnum.PAID.equals(existingInvoice.getStatus())){
+        if (StatusEnum.PAID.equals(existingInvoice.getStatus())) {
             throw new InvoicePaidException("Invoice paid, cannot be modified");
         }
         return existingInvoice;
     }
 
+    private Invoice calculateLineItemsTotalCost(Invoice existingInvoice) {
+        List<LineItem> lineItemList = existingInvoice.getLineItems();
+
+        BigDecimal invoiceTotalCost = BigDecimal.ZERO;
+        for(LineItem lineItem: lineItemList){
+            BigDecimal itemCost =  lineItem.getRate().multiply(BigDecimal.valueOf(lineItem.getQuantity()));
+            lineItem.setFee(itemCost);
+            invoiceTotalCost = invoiceTotalCost.add(itemCost);
+        }
+        existingInvoice.setTotalCost(invoiceTotalCost);
+        return existingInvoice;
+    }
 
 }

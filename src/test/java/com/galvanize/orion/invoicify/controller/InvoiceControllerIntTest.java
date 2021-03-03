@@ -17,8 +17,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -57,10 +59,18 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration Test for creating new invoice with one line item")
     public void testCreateInvoiceWithOneLineItem() throws Exception {
-        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
+        LineItem lineItem = LineItem.builder()
+                                    .description("project 1")
+                                    .quantity(10)
+                                    .rate(BigDecimal.valueOf(5.4))
+                                    .build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company("Cognizant").build();
+        Invoice invoice = Invoice.builder()
+                                    .lineItems(lineItemList)
+                                    .author("Gokul")
+                                    .company("Cognizant")
+                                    .build();
         mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
@@ -78,8 +88,16 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration Test for creating new invoice with multiple line item")
     public void testCreateInvoiceWithMultipleLineItem() throws Exception {
-        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
-        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        LineItem lineItem = LineItem.builder()
+                            .description("project 1")
+                            .quantity(10)
+                            .rate(BigDecimal.valueOf(5.4))
+                            .build();
+        LineItem lineItem2 = LineItem.builder()
+                                        .description("project 2")
+                                        .quantity(10)
+                                        .rate(BigDecimal.valueOf(4.6))
+                                        .build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
         lineItemList.add(lineItem2);
@@ -107,7 +125,12 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration Test for adding single lineItem to an existing invoice")
     public void testAddSingleLineItemToExistingInvoice() throws Exception {
-        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
+        LineItem lineItem = LineItem
+                            .builder()
+                            .description("project 1")
+                            .quantity(10)
+                            .rate(BigDecimal.valueOf(5.4))
+                            .build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
         Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company("Cognizant").build();
@@ -115,7 +138,11 @@ public class InvoiceControllerIntTest {
                 .andReturn();
 
         Invoice existingInvoice = mapper.readValue(result.getResponse().getContentAsString(), Invoice.class);
-        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        LineItem lineItem2 = LineItem.builder()
+                                        .description("project 2")
+                                        .quantity(10)
+                                        .rate(BigDecimal.valueOf(4.6))
+                                        .build();
 
         mvc.perform(put("/api/v1/invoice/" + existingInvoice.getId()).contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
@@ -223,7 +250,11 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration test throws exception when trying to add line item to non existent invoice ")
     public void test_addLineItem_exceptionThrownWhenInvoiceDoesNotExist() throws Exception {
-        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        LineItem lineItem2 = LineItem.builder()
+                                    .description("project 2")
+                                    .quantity(10)
+                                    .rate(BigDecimal.valueOf(4.6))
+                                    .build();
 
         mvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
@@ -241,10 +272,14 @@ public class InvoiceControllerIntTest {
 
         Invoice existingInvoice = mapper.readValue(result.getResponse().getContentAsString(), Invoice.class);
 
-        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        LineItem lineItem2 = LineItem.builder()
+                                    .description("project 2")
+                                    .quantity(10)
+                                    .rate(BigDecimal.valueOf(4.6))
+                                    .build();
 
         mvc.perform(put("/api/v1/invoice/" + existingInvoice.getId()).contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
+                .content(mapper.writeValueAsString(Collections.singletonList(lineItem2))))
                 .andExpect(status().isNotModified())
                 .andExpect(jsonPath("$.message").value("Invoice paid, cannot be modified"));
 
