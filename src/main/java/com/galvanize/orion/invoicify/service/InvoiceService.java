@@ -26,16 +26,9 @@ public class InvoiceService {
     private InvoiceRepository invoiceRepository;
 
     public Invoice createInvoice(Invoice invoice) {
-        BigDecimal invoiceTotalCost = BigDecimal.ZERO;
-        List<LineItem> lineItemList = invoice.getLineItems();
 
         //Calculate the cost for each line item and add that cost to invoice
-        for(LineItem lineItem: lineItemList){
-            BigDecimal itemCost = lineItem.getRate().multiply(BigDecimal.valueOf(lineItem.getQuantity()));
-            lineItem.setFee(itemCost);
-            invoiceTotalCost = invoiceTotalCost.add(itemCost);
-        }
-        invoice.setTotalCost(invoiceTotalCost);
+        calculateLineItemsTotalCost(invoice);
         //Set the creation date to the current date.
         invoice.setCreatedDate(new Date());
         return invoiceRepository.save(invoice);
@@ -64,6 +57,7 @@ public class InvoiceService {
 
     public Invoice updateInvoice(Invoice invoice) throws InvoicePaidException, InvoiceNotFoundException {
         checkValidInvoice(invoice.getId());
+        calculateLineItemsTotalCost(invoice);
         invoice.setModifiedDate(new Date());
         return invoiceRepository.save(invoice);
     }

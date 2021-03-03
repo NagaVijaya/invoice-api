@@ -120,7 +120,7 @@ public class InvoiceServiceTest {
         assertEquals(expectedInvoice.getTotalCost(), actualInvoice.getTotalCost());
         assertEquals(expectedInvoice.getCreatedDate(), actualInvoice.getCreatedDate());
         assertEquals(expectedInvoice.getLineItems().size(), 2);
-        assertEquals(expectedInvoice.getLineItems().get(0).getFee(), BigDecimal.valueOf(54));
+        assertEquals(expectedInvoice.getLineItems().get(0).getFee(), BigDecimal.valueOf(54.0));
         assertEquals(expectedInvoice.getLineItems().get(1).getFee(), BigDecimal.valueOf(46.0));
         verify(invoiceRepository, times(1)).save(any());
         verify(invoiceRepository, times(1)).findById(any(UUID.class));
