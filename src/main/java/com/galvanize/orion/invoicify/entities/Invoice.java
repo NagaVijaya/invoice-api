@@ -4,6 +4,7 @@ import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +21,7 @@ public class Invoice {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<LineItem> lineItems;
     private String company;
-    private double totalCost;
+    private BigDecimal totalCost;
     private StatusEnum status;
     private String author;
     private Date createdDate;

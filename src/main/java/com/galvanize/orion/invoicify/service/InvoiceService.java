@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -25,14 +26,14 @@ public class InvoiceService {
     private InvoiceRepository invoiceRepository;
 
     public Invoice createInvoice(Invoice invoice) {
-        double invoiceTotalCost = 0;
+        BigDecimal invoiceTotalCost = BigDecimal.ZERO;
         List<LineItem> lineItemList = invoice.getLineItems();
 
         //Calculate the cost for each line item and add that cost to invoice
         for(LineItem lineItem: lineItemList){
-            double itemCost = lineItem.getQuantity() * lineItem.getRate();
+            BigDecimal itemCost = lineItem.getRate().multiply(BigDecimal.valueOf(lineItem.getQuantity()));
             lineItem.setFee(itemCost);
-            invoiceTotalCost += itemCost;
+            invoiceTotalCost = invoiceTotalCost.add(itemCost);
         }
         invoice.setTotalCost(invoiceTotalCost);
         //Set the creation date to the current date.
@@ -51,17 +52,18 @@ public class InvoiceService {
     public Invoice addLineItemToInvoice(UUID invoiceId, List<LineItem> lineItemList) throws InvoiceNotFoundException, InvoicePaidException {
 
         Invoice existingInvoice = checkValidInvoice(invoiceId);
-
-        double invoiceTotalCost = existingInvoice.getTotalCost();
+        List <LineItem> existingInvoiceLineItems = existingInvoice.getLineItems();
+        existingInvoiceLineItems.addAll(lineItemList);
+        BigDecimal invoiceTotalCost = existingInvoice.getTotalCost();
         for(LineItem lineItem: lineItemList){
-            double itemCost = lineItem.getQuantity() * lineItem.getRate();
+            BigDecimal itemCost =  lineItem.getRate().multiply(BigDecimal.valueOf(lineItem.getQuantity()));
             lineItem.setFee(itemCost);
-            invoiceTotalCost += itemCost;
-            existingInvoice.getLineItems().add(lineItem);
+            invoiceTotalCost = invoiceTotalCost.add(itemCost);
+
         }
-
+        existingInvoice.setLineItems(existingInvoiceLineItems);
         existingInvoice.setTotalCost(invoiceTotalCost);
-
+        existingInvoice.setModifiedDate(new Date());
         return invoiceRepository.save(existingInvoice);
     }
 
@@ -83,4 +85,6 @@ public class InvoiceService {
         }
         return existingInvoice;
     }
+
+
 }

@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -156,7 +157,11 @@ public class InvoiceControllerUnitTest {
     @Test
     public void addLineItemToExistingInvoice() throws Exception {
         Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(new ArrayList<>()).build();
-        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
+        LineItem lineItem = LineItem.builder()
+                .description("project 1")
+                .quantity(10)
+                .rate(BigDecimal.valueOf(5.4))
+                .build();
         invoice.setLineItems(Collections.singletonList(lineItem));
         when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenReturn(invoice);
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Collections.singletonList(lineItem))))
@@ -170,7 +175,11 @@ public class InvoiceControllerUnitTest {
     @Test
     public void addMultipleLineItemToExistingInvoice() throws Exception {
         Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(new ArrayList<>()).build();
-        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
+        LineItem lineItem = LineItem.builder()
+                .description("project 1")
+                .quantity(10)
+                .rate(BigDecimal.valueOf(5.4))
+                .build();
         LineItem lineItem2 = InvoiceTestHelper.getLineItem2();
         invoice.setLineItems(Arrays.asList(lineItem, lineItem2));
         when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenReturn(invoice);
@@ -185,7 +194,11 @@ public class InvoiceControllerUnitTest {
 
     @Test
     public void test_addLineItem_exceptionThrownWhenInvoiceDoesNotExist() throws Exception {
-        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        LineItem lineItem2 = LineItem.builder()
+                                    .description("project 2")
+                                    .quantity(10)
+                                    .rate(BigDecimal.valueOf(4.6))
+                                    .build();
         when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenThrow(InvoiceNotFoundException.class);
 
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2").contentType(MediaType.APPLICATION_JSON)
