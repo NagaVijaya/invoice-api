@@ -188,7 +188,7 @@ public class InvoiceControllerUnitTest {
     @Test
     public void test_addLineItem_exceptionThrownWhenInvoiceDoesNotExist() throws Exception {
         LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
-        when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenThrow(InvoiceNotFoundException.class);
+        when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenThrow(new InvoiceNotFoundException());
 
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
@@ -222,7 +222,7 @@ public class InvoiceControllerUnitTest {
         modifiedInvoice.setCompany("Dunder Mifflin");
         modifiedInvoice.setAuthor("Michael Scott");
 
-        when(invoiceService.updateInvoice(any())).thenThrow(InvoicePaidException.class);
+        when(invoiceService.updateInvoice(any())).thenThrow(new InvoicePaidException());
         mockMvc.perform(patch("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(modifiedInvoice)))
                 .andExpect(status().isNotModified())
@@ -256,7 +256,7 @@ public class InvoiceControllerUnitTest {
     @Test
     public void test_delete_invoice_whenDoesNotExist_ThrowInvoiceNotFoundException() throws Exception {
 
-        doThrow(new InvoiceNotFoundException("Invoice does not exist")).when(invoiceService).deleteInvoice(any(UUID.class));
+        doThrow(new InvoiceNotFoundException()).when(invoiceService).deleteInvoice(any(UUID.class));
         UUID invoiceId = UUID.randomUUID();
         mockMvc.perform(delete("/api/v1/invoice/" + invoiceId.toString()))
                 .andExpect(status().isNotFound())

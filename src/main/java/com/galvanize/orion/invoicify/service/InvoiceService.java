@@ -55,7 +55,7 @@ public class InvoiceService {
 
         Optional<Invoice> invoice = invoiceRepository.findById(invoiceId);
         if (!invoice.isPresent()) {
-            throw new InvoiceNotFoundException("Invoice does not exist");
+            throw new InvoiceNotFoundException();
         }
 
         Invoice existingInvoice = invoice.get();
@@ -76,12 +76,12 @@ public class InvoiceService {
     public Invoice updateInvoice(Invoice invoice) throws InvoicePaidException, InvoiceNotFoundException {
         Optional<Invoice> existingOptInvoice = invoiceRepository.findById(invoice.getId());
         if (!existingOptInvoice.isPresent()) {
-            throw new InvoiceNotFoundException("Invoice does not exist");
+            throw new InvoiceNotFoundException();
         }
 
         Invoice existingInvoice = existingOptInvoice.get();
         if(existingInvoice.getStatus().equals(StatusEnum.PAID)){
-            throw new InvoicePaidException("Invoice paid, cannot be modified");
+            throw new InvoicePaidException();
         }
 
         return invoiceRepository.save(invoice);
@@ -91,7 +91,7 @@ public class InvoiceService {
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
 
         if (!optionalInvoice.isPresent()) {
-            throw new InvoiceNotFoundException("Invoice does not exist");
+            throw new InvoiceNotFoundException();
         }
 
         Invoice invoice = optionalInvoice.get();
