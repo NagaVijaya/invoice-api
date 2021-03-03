@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
 import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +32,14 @@ public class InvoiceControllerAdvice extends ResponseEntityExceptionHandler {
         invoicePaid.put("message", "Invoice paid, cannot be modified");
         String messageObject = objectMapper.writeValueAsString(invoicePaid);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_MODIFIED);
+    }
+
+    @ExceptionHandler(InvoiceNotStaleException.class)
+    public ResponseEntity<Object> handleInvoiceNoStaleException(InvoiceNotStaleException invoiceNotStaleException, WebRequest webRequest) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode notStaleInvoice = objectMapper.createObjectNode();
+        notStaleInvoice.put("message", "Invoice is less than 1 year old, can't delete!");
+        String messageObject = objectMapper.writeValueAsString(notStaleInvoice);
+        return new ResponseEntity<>(messageObject, HttpStatus.NOT_ACCEPTABLE);
     }
 }

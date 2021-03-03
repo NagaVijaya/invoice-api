@@ -1,11 +1,11 @@
 package com.galvanize.orion.invoicify.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
+import com.galvanize.orion.invoicify.repository.LineItemRepository;
 import com.galvanize.orion.invoicify.testUtilities.InvoiceData;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import org.junit.jupiter.api.DisplayName;
@@ -18,11 +18,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,6 +39,9 @@ public class InvoiceControllerIntTest {
 
     @Autowired
     private InvoiceRepository invoiceRepository;
+
+    @Autowired
+    private LineItemRepository lineItemRepository;
 
     @Autowired
     private ObjectMapper mapper;
@@ -266,5 +271,52 @@ public class InvoiceControllerIntTest {
                 .andExpect(jsonPath("$.status").value(StatusEnum.PAID.toString()));
     }
 
+    @Test
+    @DisplayName("Integration test to delete invoice with line items")
+    public void test_deleteInvoice_withLineItems() throws Exception {
+        LocalDate localDate = LocalDate.now().minusYears(2);
+        Invoice invoice = InvoiceTestHelper.getInvoiceWithTwoLineItem();
+        invoice.setCreatedDate(Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        Invoice savedInvoice = invoiceRepository.save(invoice);
 
+        Optional<LineItem> lineItem1PriorDelete = lineItemRepository.findById(savedInvoice.getLineItem().get(0).getId());
+        Optional<LineItem> lineItem2PriorDelete = lineItemRepository.findById(savedInvoice.getLineItem().get(1).getId());
+
+        mvc.perform(delete("/api/v1/invoice/" + savedInvoice.getId().toString()))
+                .andExpect(status().isOk());
+
+
+        Optional<Invoice> removedInvoice = invoiceRepository.findById(savedInvoice.getId());
+        Optional<LineItem> lineItem1PostDelete = lineItemRepository.findById(savedInvoice.getLineItem().get(0).getId());
+        Optional<LineItem> lineItem2PostDelete = lineItemRepository.findById(savedInvoice.getLineItem().get(1).getId());
+
+        assertFalse(removedInvoice.isPresent());
+        assertTrue(lineItem1PriorDelete.isPresent());
+        assertTrue(lineItem2PriorDelete.isPresent());
+        assertFalse(lineItem1PostDelete.isPresent());
+        assertFalse(lineItem2PostDelete.isPresent());
+
+    }
+
+    @Test
+    @DisplayName("Integration test to delete invoice that does not exit")
+    public void test_deleteInvoice_thatDoesNotExist() throws Exception {
+
+        mvc.perform(delete("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Invoice does not exist"));
+    }
+
+    @Test
+    @DisplayName("Integration test to delete invoice that less than a year old")
+    public void test_deleteInvoice_thatIsLessThanAYearOld() throws Exception {
+        LocalDate localDate = LocalDate.now().minusDays(10);
+        Invoice invoice = InvoiceTestHelper.getInvoiceWithTwoLineItem();
+        invoice.setCreatedDate(Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        mvc.perform(delete("/api/v1/invoice/" + savedInvoice.getId().toString()))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value("Invoice is less than 1 year old, can't delete!"));
+    }
 }

@@ -5,6 +5,7 @@ import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
 import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.service.InvoiceService;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
@@ -228,4 +229,42 @@ public class InvoiceControllerUnitTest {
                 .andExpect(jsonPath("$.message").value("Invoice paid, cannot be modified"));
         verify(invoiceService, times(1)).updateInvoice(any());
     }
+
+
+    @Test
+    public void test_delete_invoice() throws Exception {
+        UUID invoiceId = UUID.randomUUID();
+        mockMvc.perform(delete("/api/v1/invoice/" + invoiceId.toString()))
+                .andExpect(status().isOk());
+
+        verify(invoiceService, times(1)).deleteInvoice(invoiceId);
+    }
+
+    @Test
+    public void test_delete_invoice_whenInvoiceLessThanOneYearOld_ThrowInvoiceNotStaleException() throws Exception {
+
+        doThrow(new InvoiceNotStaleException()).when(invoiceService).deleteInvoice(any(UUID.class));
+        UUID invoiceId = UUID.randomUUID();
+
+        mockMvc.perform(delete("/api/v1/invoice/" + invoiceId.toString()))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value("Invoice is less than 1 year old, can't delete!"));
+
+        verify(invoiceService, times(1)).deleteInvoice(invoiceId);
+    }
+
+    @Test
+    public void test_delete_invoice_whenDoesNotExist_ThrowInvoiceNotFoundException() throws Exception {
+
+        doThrow(new InvoiceNotFoundException("Invoice does not exist")).when(invoiceService).deleteInvoice(any(UUID.class));
+        UUID invoiceId = UUID.randomUUID();
+        mockMvc.perform(delete("/api/v1/invoice/" + invoiceId.toString()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Invoice does not exist"));
+
+        verify(invoiceService, times(1)).deleteInvoice(invoiceId);
+    }
+
+
+
 }

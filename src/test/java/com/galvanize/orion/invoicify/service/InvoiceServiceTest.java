@@ -4,6 +4,7 @@ import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
 import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
@@ -15,6 +16,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -227,5 +230,56 @@ public class InvoiceServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
         verify(invoiceRepository, times(1)).findById(any(UUID.class));
+
+    }
+
+    @Test
+    public void testDeleteInvoice() throws InvoiceNotStaleException, InvoiceNotFoundException {
+        Invoice invoice = InvoiceTestHelper.getInvoiceWithOneLineItem();
+        invoice.setId(UUID.randomUUID());
+        LocalDate createdDateLocal = LocalDate.now();
+        createdDateLocal = createdDateLocal.minusYears(1);
+        invoice.setCreatedDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+        when(invoiceRepository.findById(any(UUID.class))).thenReturn(Optional.of(invoice));
+
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        invoiceService.deleteInvoice(invoice.getId());
+
+        verify(invoiceRepository, times(1)).findById(invoice.getId());
+        verify(invoiceRepository, times(1)).deleteById(invoice.getId());
+    }
+
+    @Test
+    public void testDeleteInvoice_whenInvoiceLessThanOneYearOld_ThrowInvoiceNotStaleException(){
+       Invoice invoice = InvoiceTestHelper.getInvoiceWithOneLineItem();
+       invoice.setId(UUID.randomUUID());
+       LocalDate createdDateLocal = LocalDate.now();
+       createdDateLocal = createdDateLocal.minusYears(1).plusDays(1);
+       invoice.setCreatedDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+       when(invoiceRepository.findById(any(UUID.class))).thenReturn(Optional.of(invoice));
+
+       InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+
+        assertThrows(InvoiceNotStaleException.class,() ->
+            invoiceService.deleteInvoice(invoice.getId())
+        );
+        verify(invoiceRepository, times(1)).findById(invoice.getId());
+    }
+
+    @Test
+    public void testDeleteInvoice_whenInvoiceDoesNotExist_ThrowInvoiceDoesNotExistException() {
+
+        UUID invoiceId = UUID.randomUUID();
+
+        when(invoiceRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+
+        assertThrows(InvoiceNotFoundException.class,() ->
+                invoiceService.deleteInvoice(invoiceId)
+        );
+        verify(invoiceRepository, times(1)).findById(invoiceId);
     }
 }
