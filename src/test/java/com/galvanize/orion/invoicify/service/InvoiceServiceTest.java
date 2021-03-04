@@ -292,11 +292,11 @@ public class InvoiceServiceTest {
         List<Invoice> expectedInvoiceList = Arrays.asList(InvoiceTestHelper.getUnpaidInvoice(),
                 InvoiceTestHelper.getUnpaidInvoiceWith1YearOld2());
 
-        when(invoiceRepository.findByArchivedAndPaidAndCurrentDateBefore(any(Boolean.class), any(), any(Date.class))).thenReturn(invoiceList);
+        when(invoiceRepository.findByArchivedAndStatusAndCreatedDateBefore(any(Boolean.class), any(), any(Date.class))).thenReturn(invoiceList);
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         invoiceService.archiveInvoices();
 
-        verify(invoiceRepository, times(1)).findByArchivedAndPaidAndCurrentDateBefore(any(Boolean.class), any(), any(Date.class));
+        verify(invoiceRepository, times(1)).findByArchivedAndStatusAndCreatedDateBefore(any(Boolean.class), any(), any(Date.class));
         verify(invoiceRepository, times(1)).saveAll(any());
 
     }

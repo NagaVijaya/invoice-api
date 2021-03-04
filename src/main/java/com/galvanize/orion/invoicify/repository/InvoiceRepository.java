@@ -12,5 +12,5 @@ import java.util.UUID;
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 
-    public List<Invoice> findByArchivedAndPaidAndCurrentDateBefore(boolean archived, StatusEnum status, Date lastYearDate);
+    public List<Invoice> findByArchivedAndStatusAndCreatedDateBefore(boolean archived, StatusEnum status, Date lastYearDate);
 }
