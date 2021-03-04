@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
 import com.galvanize.orion.invoicify.exception.InvoicePaidException;
+import com.galvanize.orion.invoicify.utilities.Constants;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,7 +21,7 @@ public class InvoiceControllerAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleInvoiceNotFoundException(InvoiceNotFoundException invoiceNotFoundException, WebRequest webRequest) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode invoiceNotFound = objectMapper.createObjectNode();
-        invoiceNotFound.put("message", "Invoice does not exist");
+        invoiceNotFound.put(Constants.MESSAGE, invoiceNotFoundException.getMessage());
         String messageObject = objectMapper.writeValueAsString(invoiceNotFound);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_FOUND);
     }
@@ -28,8 +30,17 @@ public class InvoiceControllerAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleInvoicePaidException(InvoicePaidException invoicePaidException, WebRequest webRequest) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode invoicePaid = objectMapper.createObjectNode();
-        invoicePaid.put("message", "Invoice paid, cannot be modified");
+        invoicePaid.put(Constants.MESSAGE, invoicePaidException.getMessage());
         String messageObject = objectMapper.writeValueAsString(invoicePaid);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_MODIFIED);
+    }
+
+    @ExceptionHandler(InvoiceNotStaleException.class)
+    public ResponseEntity<Object> handleInvoiceNoStaleException(InvoiceNotStaleException invoiceNotStaleException, WebRequest webRequest) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode notStaleInvoice = objectMapper.createObjectNode();
+        notStaleInvoice.put(Constants.MESSAGE, invoiceNotStaleException.getMessage());
+        String messageObject = objectMapper.writeValueAsString(notStaleInvoice);
+        return new ResponseEntity<>(messageObject, HttpStatus.NOT_ACCEPTABLE);
     }
 }

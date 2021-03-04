@@ -1,14 +1,14 @@
 package com.galvanize.orion.invoicify.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.builder.HashCodeExclude;
+import org.apache.commons.lang3.builder.ToStringExclude;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -26,4 +26,10 @@ public class LineItem {
     private Integer quantity;
     private BigDecimal rate;
     private BigDecimal fee;
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @ToStringExclude
+    @HashCodeExclude
+    private Invoice invoice;
 }

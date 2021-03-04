@@ -3,6 +3,7 @@ package com.galvanize.orion.invoicify.service;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
 import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
@@ -14,6 +15,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -65,12 +68,12 @@ public class InvoiceService {
     private Invoice checkValidInvoice(UUID invoiceId) throws InvoiceNotFoundException, InvoicePaidException {
         Optional<Invoice> existingOptInvoice = invoiceRepository.findById(invoiceId);
         if (!existingOptInvoice.isPresent()) {
-            throw new InvoiceNotFoundException("Invoice does not exist");
+            throw new InvoiceNotFoundException();
         }
 
         Invoice existingInvoice = existingOptInvoice.get();
         if (StatusEnum.PAID.equals(existingInvoice.getStatus())) {
-            throw new InvoicePaidException("Invoice paid, cannot be modified");
+            throw new InvoicePaidException();
         }
         return existingInvoice;
     }
@@ -88,4 +91,24 @@ public class InvoiceService {
         return existingInvoice;
     }
 
+    public void deleteInvoice(UUID invoiceId) throws InvoiceNotStaleException, InvoiceNotFoundException {
+        Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
+
+        if (!optionalInvoice.isPresent()) {
+            throw new InvoiceNotFoundException();
+        }
+
+        Invoice invoice = optionalInvoice.get();
+        LocalDate localYearBackDate = LocalDate.now().minusYears(1);
+
+        LocalDate invoiceLocalDate = invoice.getCreatedDate().toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        if(invoiceLocalDate.isAfter(localYearBackDate)){
+            throw new InvoiceNotStaleException();
+        }
+
+        invoiceRepository.deleteById(invoiceId);
+    }
 }
