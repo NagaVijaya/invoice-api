@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
@@ -28,16 +29,9 @@ public class InvoiceService {
     private InvoiceRepository invoiceRepository;
 
     public Invoice createInvoice(Invoice invoice) {
-        double invoiceTotalCost = 0;
-        List<LineItem> lineItemList = invoice.getLineItem();
 
         //Calculate the cost for each line item and add that cost to invoice
-        for(LineItem lineItem: lineItemList){
-            double itemCost = lineItem.getQuantity() * lineItem.getRate();
-            lineItem.setFee(itemCost);
-            invoiceTotalCost += itemCost;
-        }
-        invoice.setTotalCost(invoiceTotalCost);
+        calculateLineItemsTotalCost(invoice);
         //Set the creation date to the current date.
         invoice.setCreatedDate(new Date());
         return invoiceRepository.save(invoice);
@@ -51,40 +45,50 @@ public class InvoiceService {
         return page.getContent();
     }
 
-    public Invoice addLineItemToInvoice(UUID invoiceId, List<LineItem> lineItemList) throws InvoiceNotFoundException {
+    public Invoice addLineItemToInvoice(UUID invoiceId, List<LineItem> lineItemList) throws InvoiceNotFoundException, InvoicePaidException {
 
-        Optional<Invoice> invoice = invoiceRepository.findById(invoiceId);
-        if (!invoice.isPresent()) {
-            throw new InvoiceNotFoundException();
-        }
+        Invoice existingInvoice = checkValidInvoice(invoiceId);
+        List <LineItem> existingInvoiceLineItems = existingInvoice.getLineItems();
+        existingInvoiceLineItems.addAll(lineItemList);
+        existingInvoice.setLineItems(existingInvoiceLineItems);
 
-        Invoice existingInvoice = invoice.get();
+        calculateLineItemsTotalCost(existingInvoice);
 
-        double invoiceTotalCost = existingInvoice.getTotalCost();
-        for(LineItem lineItem: lineItemList){
-            double itemCost = lineItem.getQuantity() * lineItem.getRate();
-            lineItem.setFee(itemCost);
-            invoiceTotalCost += itemCost;
-            existingInvoice.getLineItem().add(lineItem);
-        }
-
-        existingInvoice.setTotalCost(invoiceTotalCost);
-
+        existingInvoice.setModifiedDate(new Date());
         return invoiceRepository.save(existingInvoice);
     }
 
     public Invoice updateInvoice(Invoice invoice) throws InvoicePaidException, InvoiceNotFoundException {
-        Optional<Invoice> existingOptInvoice = invoiceRepository.findById(invoice.getId());
+        checkValidInvoice(invoice.getId());
+        calculateLineItemsTotalCost(invoice);
+        invoice.setModifiedDate(new Date());
+        return invoiceRepository.save(invoice);
+    }
+
+    private Invoice checkValidInvoice(UUID invoiceId) throws InvoiceNotFoundException, InvoicePaidException {
+        Optional<Invoice> existingOptInvoice = invoiceRepository.findById(invoiceId);
         if (!existingOptInvoice.isPresent()) {
             throw new InvoiceNotFoundException();
         }
 
         Invoice existingInvoice = existingOptInvoice.get();
-        if(existingInvoice.getStatus().equals(StatusEnum.PAID)){
+        if (StatusEnum.PAID.equals(existingInvoice.getStatus())) {
             throw new InvoicePaidException();
         }
+        return existingInvoice;
+    }
 
-        return invoiceRepository.save(invoice);
+    private Invoice calculateLineItemsTotalCost(Invoice existingInvoice) {
+        List<LineItem> lineItemList = existingInvoice.getLineItems();
+
+        BigDecimal invoiceTotalCost = BigDecimal.ZERO;
+        for(LineItem lineItem: lineItemList){
+            BigDecimal itemCost =  lineItem.getRate().multiply(BigDecimal.valueOf(lineItem.getQuantity()));
+            lineItem.setFee(itemCost);
+            invoiceTotalCost = invoiceTotalCost.add(itemCost);
+        }
+        existingInvoice.setTotalCost(invoiceTotalCost);
+        return existingInvoice;
     }
 
     public void deleteInvoice(UUID invoiceId) throws InvoiceNotStaleException, InvoiceNotFoundException {

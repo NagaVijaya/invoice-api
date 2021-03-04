@@ -6,13 +6,13 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 @Data
 @Entity
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Invoice {
@@ -21,11 +21,16 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<LineItem> lineItem;
+    private List<LineItem> lineItems;
     private String company;
-    private double totalCost;
+    private BigDecimal totalCost;
     private StatusEnum status;
     private String author;
     @CreatedDate
     private Date createdDate;
+    private Date modifiedDate;
+
+    public Invoice(){
+        status = StatusEnum.UNPAID;
+    }
 }
