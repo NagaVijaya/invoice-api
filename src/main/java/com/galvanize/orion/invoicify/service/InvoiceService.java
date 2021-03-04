@@ -120,4 +120,13 @@ public class InvoiceService {
         invoiceRepository.deleteById(invoiceId);
     }
 
+    public void archiveInvoices() {
+
+        LocalDate createdDateLocal = LocalDate.now().minusYears(1);
+        Date lastYearDate = Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        List<Invoice> invoiceToArchive = invoiceRepository.findByArchivedAndStatusAndCreatedDateBefore(false, StatusEnum.UNPAID, lastYearDate);
+        invoiceToArchive.forEach(invoice -> invoice.setArchived(true));
+        invoiceRepository.saveAll(invoiceToArchive);
+    }
 }
