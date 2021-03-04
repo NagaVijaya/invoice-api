@@ -273,7 +273,7 @@ public class InvoiceControllerIntTest {
     }
 
     @Test
-    @DisplayName("Integration test throws exception when trying to add line item to non existent invoice ")
+    @DisplayName("Integration test throws exception when trying to add line item to paid invoice ")
     public void test_addLineItem_exceptionThrownWhenInvoiceIsPaid() throws Exception {
         Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.PAID).company("Cognizant").build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
