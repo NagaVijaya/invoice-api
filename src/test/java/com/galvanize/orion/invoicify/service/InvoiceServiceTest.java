@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -32,8 +33,16 @@ public class InvoiceServiceTest {
 
     @Test
     public void testCreateInvoiceNoLineIem() {
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(new ArrayList<>()).build();
-        Invoice expectedInvoice = Invoice.builder().author("Gokul").company("Cognizant").totalCost(0).createdDate(new Date()).build();
+        Invoice invoice = Invoice.builder()
+                                 .author("Gokul")
+                                 .company("Cognizant")
+                                 .lineItems(new ArrayList<>()).build();
+        Invoice expectedInvoice =    Invoice.builder()
+                                            .author("Gokul")
+                                            .company("Cognizant")
+                                            .totalCost(BigDecimal.valueOf(0))
+                                            .createdDate(new Date())
+                                            .build();
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         when(invoiceRepository.save(any())).thenReturn(expectedInvoice);
         Invoice actualInvoice = invoiceService.createInvoice(invoice);
@@ -46,13 +55,20 @@ public class InvoiceServiceTest {
 
     @Test
     public void testCreateInvoiceMultipleLineIem() {
-        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).build();
-        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(4.6).build();
+        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(BigDecimal.valueOf(5.4)).build();
+        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(BigDecimal.valueOf(4.6)).build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
         lineItemList.add(lineItem2);
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(lineItemList).build();
-        Invoice expectedInvoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(lineItemList).totalCost(100).createdDate(new Date()).build();
+        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(lineItemList).build();
+        Invoice expectedInvoice = Invoice.builder()
+                                        .author("Gokul")
+                                        .company("Cognizant")
+                                        .lineItems(lineItemList)
+                                        .totalCost(BigDecimal
+                                        .valueOf(100))
+                                        .createdDate(new Date())
+                                        .build();
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         when(invoiceRepository.save(any())).thenReturn(expectedInvoice);
         Invoice actualInvoice = invoiceService.createInvoice(invoice);
@@ -60,28 +76,38 @@ public class InvoiceServiceTest {
         assertEquals(expectedInvoice.getCompany(), actualInvoice.getCompany());
         assertEquals(expectedInvoice.getTotalCost(), actualInvoice.getTotalCost());
         assertEquals(expectedInvoice.getCreatedDate(), actualInvoice.getCreatedDate());
-        assertEquals(expectedInvoice.getLineItem().size(), 2);
-        assertEquals(expectedInvoice.getLineItem().get(0).getFee(), 54);
-        assertEquals(expectedInvoice.getLineItem().get(1).getFee(), 46);
+        assertEquals(expectedInvoice.getLineItems().size(), 2);
+        assertEquals(expectedInvoice.getLineItems().get(0).getFee(), BigDecimal.valueOf(54.0));
+        assertEquals(expectedInvoice.getLineItems().get(1).getFee(), BigDecimal.valueOf(46.0));
         verify(invoiceRepository, times(1)).save(any());
     }
 
     @Test
-    public void testAddLineItemToExistingInvoice() throws InvoiceNotFoundException {
+    public void testAddLineItemToExistingInvoice() throws InvoiceNotFoundException, InvoicePaidException {
 
         UUID uid = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3");
 
-        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(5.4).fee(54).build();
+        LineItem lineItem = LineItem.builder()
+                                    .description("project 1")
+                                    .quantity(10)
+                                    .rate(BigDecimal.valueOf(5.4))
+                                    .fee(BigDecimal.valueOf(54))
+                                    .build();
         LineItem lineItem2 = InvoiceTestHelper.getLineItem2();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(lineItemList).build();
+        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(lineItemList).totalCost(BigDecimal.valueOf(0)).build();
         Optional<Invoice> existingInvoice1 = Optional.of(invoice);
 
         List<LineItem> lineItemList1 = new ArrayList<>();
         lineItemList1.add(lineItem);
         lineItemList1.add(lineItem2);
-        Invoice expectedInvoice = Invoice.builder().author("Gokul").company("Cognizant").lineItem(lineItemList1).totalCost(100).createdDate(new Date()).build();
+        Invoice expectedInvoice =    Invoice.builder()
+                                            .author("Gokul")
+                                            .company("Cognizant")
+                                            .lineItems(lineItemList1)
+                                            .totalCost(BigDecimal.valueOf(100))
+                                            .createdDate(new Date()).build();
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         when(invoiceRepository.save(any())).thenReturn(expectedInvoice);
@@ -96,9 +122,9 @@ public class InvoiceServiceTest {
         assertEquals(expectedInvoice.getCompany(), actualInvoice.getCompany());
         assertEquals(expectedInvoice.getTotalCost(), actualInvoice.getTotalCost());
         assertEquals(expectedInvoice.getCreatedDate(), actualInvoice.getCreatedDate());
-        assertEquals(expectedInvoice.getLineItem().size(), 2);
-        assertEquals(expectedInvoice.getLineItem().get(0).getFee(), 54);
-        assertEquals(expectedInvoice.getLineItem().get(1).getFee(), 46);
+        assertEquals(expectedInvoice.getLineItems().size(), 2);
+        assertEquals(expectedInvoice.getLineItems().get(0).getFee(), BigDecimal.valueOf(54.0));
+        assertEquals(expectedInvoice.getLineItems().get(1).getFee(), BigDecimal.valueOf(46.0));
         verify(invoiceRepository, times(1)).save(any());
         verify(invoiceRepository, times(1)).findById(any(UUID.class));
 
@@ -199,7 +225,7 @@ public class InvoiceServiceTest {
         Invoice existingInvoice = InvoiceTestHelper.getUnpaidInvoice();
         Optional<Invoice> existingOptInvoice = Optional.of(existingInvoice);
         Invoice modifiedInvoice = InvoiceTestHelper.getPaidInvoice();
-
+        modifiedInvoice.setModifiedDate(new Date());
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingOptInvoice);
         when(invoiceRepository.save(any())).thenReturn(modifiedInvoice);
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
@@ -207,6 +233,7 @@ public class InvoiceServiceTest {
         Invoice actualInvoice = invoiceService.updateInvoice(existingInvoice);
 
         assertEquals(actualInvoice.getStatus(), StatusEnum.PAID);
+        assertNotNull(actualInvoice.getModifiedDate());
         verify(invoiceRepository, times(1)).findById(any(UUID.class));
 
         verify(invoiceRepository, times(1)).save(any());
@@ -222,7 +249,8 @@ public class InvoiceServiceTest {
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
 
         Exception exception = assertThrows(InvoicePaidException.class, () -> {
-            invoiceService.updateInvoice(existingInvoice);;
+            invoiceService.updateInvoice(existingInvoice);
+            ;
         });
 
         String expectedMessage = "Invoice paid, cannot be modified";

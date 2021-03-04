@@ -9,6 +9,7 @@ import org.apache.commons.lang3.builder.HashCodeExclude;
 import org.apache.commons.lang3.builder.ToStringExclude;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -22,9 +23,9 @@ public class LineItem {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     private String description;
-    private int quantity;
-    private double rate;
-    private double fee;
+    private Integer quantity;
+    private BigDecimal rate;
+    private BigDecimal fee;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
