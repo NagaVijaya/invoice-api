@@ -28,6 +28,7 @@ public class Invoice {
     private String author;
     @CreatedDate
     private Date createdDate;
+    private boolean archived;
     private Date modifiedDate;
 
     public Invoice(){

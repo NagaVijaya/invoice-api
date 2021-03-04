@@ -310,4 +310,22 @@ public class InvoiceServiceTest {
         );
         verify(invoiceRepository, times(1)).findById(invoiceId);
     }
+
+    @Test
+    public void testArchiveInvoices(){
+
+        List<Invoice> invoiceList = Arrays.asList(InvoiceTestHelper.getUnpaidInvoice(),
+                InvoiceTestHelper.getPaidInvoiceWith1YearOld1(),
+                InvoiceTestHelper.getUnpaidInvoiceWith1YearOld2());
+        List<Invoice> expectedInvoiceList = Arrays.asList(InvoiceTestHelper.getUnpaidInvoice(),
+                InvoiceTestHelper.getUnpaidInvoiceWith1YearOld2());
+
+        when(invoiceRepository.findByArchivedAndStatusAndCreatedDateBefore(any(Boolean.class), any(), any(Date.class))).thenReturn(invoiceList);
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        invoiceService.archiveInvoices();
+
+        verify(invoiceRepository, times(1)).findByArchivedAndStatusAndCreatedDateBefore(any(Boolean.class), any(), any(Date.class));
+        verify(invoiceRepository, times(1)).saveAll(any());
+
+    }
 }

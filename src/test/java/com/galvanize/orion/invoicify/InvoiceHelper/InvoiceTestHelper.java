@@ -5,10 +5,9 @@ import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
 public class InvoiceTestHelper {
 
@@ -44,6 +43,7 @@ public class InvoiceTestHelper {
                 .company("Cognizant")
                 .status(StatusEnum.UNPAID)
                 .lineItems(Collections.singletonList(getLineItem()))
+                .createdDate(new Date())
                 .build();
     }
 
@@ -54,6 +54,32 @@ public class InvoiceTestHelper {
                 .company("Cognizant")
                 .status(StatusEnum.PAID)
                 .lineItems(Collections.singletonList(getLineItem()))
+                .build();
+    }
+
+    public static Invoice getPaidInvoiceWith1YearOld1() {
+        LocalDate createdDateLocal = LocalDate.now();
+        createdDateLocal = createdDateLocal.minusYears(1);
+        return Invoice.builder()
+                .id(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3"))
+                .author("Gokul")
+                .company("Cognizant")
+                .status(StatusEnum.PAID)
+                .lineItems(Collections.singletonList(getLineItem()))
+                .createdDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                .build();
+    }
+
+    public static Invoice getUnpaidInvoiceWith1YearOld2() {
+        LocalDate createdDateLocal = LocalDate.now();
+        createdDateLocal = createdDateLocal.minusYears(1);
+        return Invoice.builder()
+                .id(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3"))
+                .author("Gokul")
+                .company("Cognizant")
+                .status(StatusEnum.UNPAID)
+                .lineItems(Collections.singletonList(getLineItem()))
+                .createdDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
                 .build();
     }
 }
