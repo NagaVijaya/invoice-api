@@ -310,4 +310,18 @@ public class InvoiceServiceTest {
         );
         verify(invoiceRepository, times(1)).findById(invoiceId);
     }
+
+    @Test
+    public void testCreateInvoiceWithDiscount_withUnpaidInvoice() {
+        Invoice unpaidInvoice = InvoiceTestHelper.getUnpaidDiscountedInvoice();
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+
+        when(invoiceRepository.save(any())).thenReturn(unpaidInvoice);
+
+        Invoice invoiceAfterDiscount = invoiceService.createInvoice(unpaidInvoice);
+
+        assertEquals(BigDecimal.valueOf(90.00).setScale(2), invoiceAfterDiscount.getTotalCost());
+        verify(invoiceRepository, times(1)).save(unpaidInvoice);
+    }
+
 }

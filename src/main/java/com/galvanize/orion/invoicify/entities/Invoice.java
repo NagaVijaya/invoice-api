@@ -29,6 +29,7 @@ public class Invoice {
     @CreatedDate
     private Date createdDate;
     private Date modifiedDate;
+    private BigDecimal discountPercent;
 
     public Invoice(){
         status = StatusEnum.UNPAID;

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
@@ -87,6 +88,13 @@ public class InvoiceService {
             lineItem.setFee(itemCost);
             invoiceTotalCost = invoiceTotalCost.add(itemCost);
         }
+        if (existingInvoice.getDiscountPercent() != null) {
+            BigDecimal discountAmount = existingInvoice.getDiscountPercent().divide(BigDecimal.valueOf(100)).multiply(invoiceTotalCost);
+            invoiceTotalCost = invoiceTotalCost.subtract(discountAmount);
+        }
+
+        invoiceTotalCost = invoiceTotalCost.setScale(2, RoundingMode.CEILING);
+
         existingInvoice.setTotalCost(invoiceTotalCost);
         return existingInvoice;
     }
@@ -111,4 +119,5 @@ public class InvoiceService {
 
         invoiceRepository.deleteById(invoiceId);
     }
+
 }
