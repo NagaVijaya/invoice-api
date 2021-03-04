@@ -65,7 +65,7 @@ public class InvoiceTestHelper {
                 .author("Gokul")
                 .company("Cognizant")
                 .status(StatusEnum.PAID)
-                .lineItem(Collections.singletonList(getLineItem()))
+                .lineItems(Collections.singletonList(getLineItem()))
                 .createdDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
                 .build();
     }
@@ -78,7 +78,7 @@ public class InvoiceTestHelper {
                 .author("Gokul")
                 .company("Cognizant")
                 .status(StatusEnum.UNPAID)
-                .lineItem(Collections.singletonList(getLineItem()))
+                .lineItems(Collections.singletonList(getLineItem()))
                 .createdDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
                 .build();
     }
