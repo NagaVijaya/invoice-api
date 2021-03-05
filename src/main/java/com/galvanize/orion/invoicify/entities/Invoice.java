@@ -30,6 +30,7 @@ public class Invoice {
     private Date createdDate;
     private boolean archived;
     private Date modifiedDate;
+    private BigDecimal discountPercent;
 
     public Invoice(){
         status = StatusEnum.UNPAID;

@@ -312,6 +312,20 @@ public class InvoiceServiceTest {
     }
 
     @Test
+    public void testCreateInvoiceWithDiscount_withUnpaidInvoice() {
+        Invoice unpaidInvoice = InvoiceTestHelper.getUnpaidDiscountedInvoice();
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+
+        when(invoiceRepository.save(any())).thenReturn(unpaidInvoice);
+
+        Invoice invoiceAfterDiscount = invoiceService.createInvoice(unpaidInvoice);
+
+        assertEquals(BigDecimal.valueOf(90.00).setScale(2), invoiceAfterDiscount.getTotalCost());
+        verify(invoiceRepository, times(1)).save(unpaidInvoice);
+    }
+
+
+    @Test
     public void testArchiveInvoices(){
 
         List<Invoice> invoiceList = Arrays.asList(InvoiceTestHelper.getUnpaidInvoice(),
