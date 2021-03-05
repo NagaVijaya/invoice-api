@@ -40,7 +40,7 @@ public class InvoiceService {
 
     public List<Invoice> getAllInvoices(Integer pageNumber) {
 
-        Page<Invoice> page = invoiceRepository.findAll(PageRequest.of(pageNumber,
+        Page<Invoice> page = invoiceRepository.findAllByArchived(Constants.FALSE, PageRequest.of(pageNumber,
                 Constants.PAGE_SIZE, Sort.by(Sort.Direction.ASC, Constants.ORDER_COLUMN)));
 
         return page.getContent();

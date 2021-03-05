@@ -8,4 +8,5 @@ public class Constants {
     public static final String MESSAGE = "message";
     public static final String INVOICE_PAID_CANNOT_BE_MODIFIED = "Invoice paid, cannot be modified";
     public static final String INVOICE_DOES_NOT_EXIST = "Invoice does not exist";
+    public static final boolean FALSE = false;
 }
