@@ -23,6 +23,10 @@ public class InvoiceTestHelper {
         return LineItem.builder().description("project 3").quantity(10).rate(BigDecimal.valueOf(5.0)).build();
     }
 
+    public static LineItem getLineItem4() {
+        return LineItem.builder().description("project 3").quantity(10).rate(BigDecimal.valueOf(10)).build();
+    }
+
     public static List<LineItem> getLineItemListWithTwoLineItem() {
         return Arrays.asList(getLineItem(), getLineItem2());
     }
@@ -80,6 +84,18 @@ public class InvoiceTestHelper {
                 .status(StatusEnum.UNPAID)
                 .lineItems(Collections.singletonList(getLineItem()))
                 .createdDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                .build();
+    }
+
+    public static Invoice getUnpaidDiscountedInvoice() {
+        return Invoice.builder()
+                .id(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b5"))
+                .author("Gokul")
+                .company("Cognizant")
+                .discountPercent(BigDecimal.valueOf(10))
+                .status(StatusEnum.UNPAID)
+                .totalCost(BigDecimal.valueOf(100))
+                .lineItems(Collections.singletonList(getLineItem4()))
                 .build();
     }
 }
