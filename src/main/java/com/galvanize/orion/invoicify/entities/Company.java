@@ -16,9 +16,9 @@ public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private String name;
     private String address;
     private String city;
     private String state;
+    private String zipCode;
 }
