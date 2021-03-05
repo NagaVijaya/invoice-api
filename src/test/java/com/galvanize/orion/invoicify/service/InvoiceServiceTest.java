@@ -11,10 +11,7 @@ import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -133,13 +130,13 @@ public class InvoiceServiceTest {
     @Test
     public void getAllInvoices_forEmptyList() {
         Page<Invoice> page = new PageImpl<>(new ArrayList<>());
-        when(invoiceRepository.findAll(any(PageRequest.class))).thenReturn(page);
+        when(invoiceRepository.findAllByArchived(anyBoolean(), any(Pageable.class))).thenReturn(page);
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(0, result.size());
 
-        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        verify(invoiceRepository, times(1)).findAllByArchived(anyBoolean(), any());
     }
 
     @Test
@@ -147,14 +144,14 @@ public class InvoiceServiceTest {
         List<Invoice> invoiceList = new ArrayList<>();
         invoiceList.add(Invoice.builder().build());
         Page<Invoice> page = new PageImpl<>(invoiceList);
-        when(invoiceRepository.findAll(any(PageRequest.class))).thenReturn(page);
+        when(invoiceRepository.findAllByArchived(anyBoolean(), any(Pageable.class))).thenReturn(page);
 
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(1, result.size());
 
-        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        verify(invoiceRepository, times(1)).findAllByArchived(anyBoolean(),any());
 
     }
 
@@ -164,7 +161,7 @@ public class InvoiceServiceTest {
         invoiceList.add(Invoice.builder().author("Peter").build());
         invoiceList.add(Invoice.builder().author("Naga").build());
         Page<Invoice> page = new PageImpl<>(invoiceList);
-        when(invoiceRepository.findAll(any(PageRequest.class))).thenReturn(page);
+        when(invoiceRepository.findAllByArchived(anyBoolean(), any())).thenReturn(page);
 
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
@@ -173,7 +170,7 @@ public class InvoiceServiceTest {
         assertEquals("Peter", result.get(0).getAuthor());
         assertEquals("Naga", result.get(1).getAuthor());
 
-        verify(invoiceRepository, times(1)).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        verify(invoiceRepository, times(1)).findAllByArchived(anyBoolean(), any());
 
     }
 
@@ -183,7 +180,7 @@ public class InvoiceServiceTest {
         invoiceList.add(Invoice.builder().author("Peter").build());
         invoiceList.add(Invoice.builder().author("Naga").build());
         Page<Invoice> page = new PageImpl<>(invoiceList);
-        when(invoiceRepository.findAll(any(PageRequest.class))).thenReturn(page);
+        when(invoiceRepository.findAllByArchived(anyBoolean(), any(Pageable.class))).thenReturn(page);
 
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
@@ -192,7 +189,7 @@ public class InvoiceServiceTest {
         assertEquals("Peter", result.get(0).getAuthor());
         assertEquals("Naga", result.get(1).getAuthor());
 
-        verify(invoiceRepository).findAll(PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        verify(invoiceRepository).findAllByArchived(anyBoolean(), any());
 
     }
 

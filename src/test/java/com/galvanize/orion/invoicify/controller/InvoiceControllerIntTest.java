@@ -257,6 +257,23 @@ public class InvoiceControllerIntTest {
     }
 
     @Test
+    @DisplayName("Integration test for GET invoices with paging and sorting by created date in ascending order and not archived")
+    public void test_getAllInvoices_returnsInvoicesNotArchived() throws Exception {
+
+
+        List<Invoice> invoiceList = InvoiceData.GenerateInvoicesWithArchived();
+        invoiceList.forEach(invoice -> invoiceRepository.save(invoice));
+
+        mvc.perform(get("/api/v1/invoices"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(9))
+                .andExpect(jsonPath("$[0].author").value("Author09"))
+                .andExpect(jsonPath("$[8].author").value("Author00"));
+
+    }
+
+    @Test
     @DisplayName("Integration test throws exception when trying to add line item to non existent invoice ")
     public void test_addLineItem_exceptionThrownWhenInvoiceDoesNotExist() throws Exception {
         LineItem lineItem2 = LineItem.builder()
