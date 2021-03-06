@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class CompanyService {
-    @Autowired
+  
     private CompanyRepository companyRepository;
 
     public Company addCompany(Company company) {
