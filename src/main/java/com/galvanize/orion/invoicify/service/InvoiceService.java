@@ -66,6 +66,37 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
+    public void deleteInvoice(UUID invoiceId) throws InvoiceNotStaleException, InvoiceNotFoundException {
+        Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
+
+        if (!optionalInvoice.isPresent()) {
+            throw new InvoiceNotFoundException();
+        }
+
+        Invoice invoice = optionalInvoice.get();
+        LocalDate localYearBackDate = LocalDate.now().minusYears(1);
+
+        LocalDate invoiceLocalDate = invoice.getCreatedDate().toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        if(invoiceLocalDate.isAfter(localYearBackDate)){
+            throw new InvoiceNotStaleException();
+        }
+
+        invoiceRepository.deleteById(invoiceId);
+    }
+
+    public void archiveInvoices() {
+
+        LocalDate createdDateLocal = LocalDate.now().minusYears(1);
+        Date lastYearDate = Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        List<Invoice> invoiceToArchive = invoiceRepository.findByArchivedAndStatusAndCreatedDateBefore(false, StatusEnum.UNPAID, lastYearDate);
+        invoiceToArchive.forEach(invoice -> invoice.setArchived(true));
+        invoiceRepository.saveAll(invoiceToArchive);
+    }
+
     private Invoice checkValidInvoice(UUID invoiceId) throws InvoiceNotFoundException, InvoicePaidException {
         Optional<Invoice> existingOptInvoice = invoiceRepository.findById(invoiceId);
         if (!existingOptInvoice.isPresent()) {
@@ -97,36 +128,5 @@ public class InvoiceService {
 
         existingInvoice.setTotalCost(invoiceTotalCost);
         return existingInvoice;
-    }
-
-    public void deleteInvoice(UUID invoiceId) throws InvoiceNotStaleException, InvoiceNotFoundException {
-        Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
-
-        if (!optionalInvoice.isPresent()) {
-            throw new InvoiceNotFoundException();
-        }
-
-        Invoice invoice = optionalInvoice.get();
-        LocalDate localYearBackDate = LocalDate.now().minusYears(1);
-
-        LocalDate invoiceLocalDate = invoice.getCreatedDate().toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-
-        if(invoiceLocalDate.isAfter(localYearBackDate)){
-            throw new InvoiceNotStaleException();
-        }
-
-        invoiceRepository.deleteById(invoiceId);
-    }
-
-    public void archiveInvoices() {
-
-        LocalDate createdDateLocal = LocalDate.now().minusYears(1);
-        Date lastYearDate = Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-        List<Invoice> invoiceToArchive = invoiceRepository.findByArchivedAndStatusAndCreatedDateBefore(false, StatusEnum.UNPAID, lastYearDate);
-        invoiceToArchive.forEach(invoice -> invoice.setArchived(true));
-        invoiceRepository.saveAll(invoiceToArchive);
     }
 }
