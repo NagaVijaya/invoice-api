@@ -1,13 +1,11 @@
 package com.galvanize.orion.invoicify.service;
 
 import com.galvanize.orion.invoicify.entities.Company;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -17,7 +15,7 @@ public class CompanyService {
 
     public List<Company> getAllCompanies() {
 
-        return new ArrayList<>();
+        return companyRepository.findAll();
     }
 
     public Company addCompany(Company company) {
