@@ -27,4 +27,12 @@ public class CompanyTestHelper {
                 .build();
         return companyOne;
     }
+
+    public static Company getArchivedCompany() {
+        Company archivedCompany = Company.builder()
+                .name("Archived Company")
+                .archived(true)
+                .build();
+        return archivedCompany;
+    }
 }

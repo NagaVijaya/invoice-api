@@ -54,6 +54,7 @@ public class CompanyControllerIntTest {
         List<Company> companyList = new ArrayList<>();
         companyList.add(CompanyTestHelper.getCompanyOne());
         companyList.add(CompanyTestHelper.getCompanyTwo());
+        companyList.add(CompanyTestHelper.getArchivedCompany());
         companyRepository.saveAll(companyList);
 
 
