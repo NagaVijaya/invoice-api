@@ -34,13 +34,4 @@ public class InvoiceControllerAdvice extends ResponseEntityExceptionHandler {
         String messageObject = objectMapper.writeValueAsString(invoicePaid);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_MODIFIED);
     }
-
-    @ExceptionHandler(InvoiceNotStaleException.class)
-    public ResponseEntity<Object> handleInvoiceNoStaleException(InvoiceNotStaleException invoiceNotStaleException, WebRequest webRequest) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ObjectNode notStaleInvoice = objectMapper.createObjectNode();
-        notStaleInvoice.put(Constants.MESSAGE, invoiceNotStaleException.getMessage());
-        String messageObject = objectMapper.writeValueAsString(notStaleInvoice);
-        return new ResponseEntity<>(messageObject, HttpStatus.NOT_ACCEPTABLE);
-    }
 }

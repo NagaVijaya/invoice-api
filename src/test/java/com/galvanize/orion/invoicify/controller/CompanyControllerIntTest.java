@@ -6,6 +6,7 @@ import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
+import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,10 +18,10 @@ import org.springframework.transaction.annotation.Propagation;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -64,5 +65,47 @@ public class CompanyControllerIntTest {
                 .content(objectMapper.writeValueAsString(duplicateCompany)))
                 .andExpect(status().isNotAcceptable())
                 .andExpect(jsonPath("$.message").value(Constants.DUPLICATE_COMPANY_MESSAGE));
+    }
+
+    @Test
+    public void test_getAllCompanies_returnsMultipleCompanies() throws Exception {
+        List<Company> companyList = new ArrayList<>();
+        companyList.add(CompanyTestHelper.getCompanyOne());
+        companyList.add(CompanyTestHelper.getCompanyTwo());
+        companyList.add(CompanyTestHelper.getArchivedCompany());
+        companyRepository.saveAll(companyList);
+
+
+        mockMvc.perform(get("/api/v1/companies"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Company One"))
+                .andExpect(jsonPath("$[1].name").value("Company Two"));
+    }
+
+    @Test
+    public void test_getAllSimpleCompanies_returnsMultipleCompanies() throws Exception {
+        List<Company> companyList = new ArrayList<>();
+        companyList.add(CompanyTestHelper.getCompanyOne());
+        companyList.add(CompanyTestHelper.getCompanyTwo());
+        companyList.add(CompanyTestHelper.getArchivedCompany());
+        companyRepository.saveAll(companyList);
+
+
+        mockMvc.perform(get("/api/v1/companies/simple"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Company One"))
+                .andExpect(jsonPath("$[0].city").value("Chicago"))
+                .andExpect(jsonPath("$[0].state").value("IL"))
+                .andExpect(jsonPath("$[0].address").doesNotExist())
+                .andExpect(jsonPath("$[0].zipCode").doesNotExist())
+                .andExpect(jsonPath("$[1].name").value("Company Two"))
+                .andExpect(jsonPath("$[1].address").doesNotExist())
+                .andExpect(jsonPath("$[1].zipCode").doesNotExist())
+                .andExpect(jsonPath("$[1].city").value("Columbus"))
+                .andExpect(jsonPath("$[1].state").value("OH"));
     }
 }

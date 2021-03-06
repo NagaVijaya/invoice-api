@@ -22,6 +22,7 @@ public class Company {
     private String city;
     private String state;
     private String zipCode;
+    private boolean archived;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "company")
     private List<Invoice> invoices = new ArrayList<>();
 }
