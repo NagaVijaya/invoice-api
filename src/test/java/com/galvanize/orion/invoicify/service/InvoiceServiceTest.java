@@ -1,6 +1,8 @@
 package com.galvanize.orion.invoicify.service;
 
+import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
 import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
+import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
@@ -30,13 +32,14 @@ public class InvoiceServiceTest {
 
     @Test
     public void testCreateInvoiceNoLineIem() {
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
         Invoice invoice = Invoice.builder()
                                  .author("Gokul")
-                                 .company("Cognizant")
+                                 .company(existingCompany)
                                  .lineItems(new ArrayList<>()).build();
         Invoice expectedInvoice =    Invoice.builder()
                                             .author("Gokul")
-                                            .company("Cognizant")
+                                            .company(existingCompany)
                                             .totalCost(BigDecimal.valueOf(0))
                                             .createdDate(new Date())
                                             .build();
@@ -57,10 +60,11 @@ public class InvoiceServiceTest {
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
         lineItemList.add(lineItem2);
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(lineItemList).build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().author("Gokul").company(existingCompany).lineItems(lineItemList).build();
         Invoice expectedInvoice = Invoice.builder()
                                         .author("Gokul")
-                                        .company("Cognizant")
+                                        .company(existingCompany)
                                         .lineItems(lineItemList)
                                         .totalCost(BigDecimal
                                         .valueOf(100))
@@ -93,15 +97,17 @@ public class InvoiceServiceTest {
         LineItem lineItem2 = InvoiceTestHelper.getLineItem2();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(lineItemList).totalCost(BigDecimal.valueOf(0)).build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().author("Gokul").company(existingCompany).lineItems(lineItemList).totalCost(BigDecimal.valueOf(0)).build();
         Optional<Invoice> existingInvoice1 = Optional.of(invoice);
 
         List<LineItem> lineItemList1 = new ArrayList<>();
         lineItemList1.add(lineItem);
         lineItemList1.add(lineItem2);
+
         Invoice expectedInvoice =    Invoice.builder()
                                             .author("Gokul")
-                                            .company("Cognizant")
+                                            .company(existingCompany)
                                             .lineItems(lineItemList1)
                                             .totalCost(BigDecimal.valueOf(100))
                                             .createdDate(new Date()).build();

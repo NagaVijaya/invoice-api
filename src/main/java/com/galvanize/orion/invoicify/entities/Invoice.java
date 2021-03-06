@@ -1,5 +1,6 @@
 package com.galvanize.orion.invoicify.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +24,9 @@ public class Invoice {
     private UUID id;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<LineItem> lineItems;
-    private String company;
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Company company;
     private BigDecimal totalCost;
     private StatusEnum status;
     private String author;

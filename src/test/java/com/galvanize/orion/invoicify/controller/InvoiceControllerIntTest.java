@@ -1,7 +1,9 @@
 package com.galvanize.orion.invoicify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
 import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
+import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
@@ -20,14 +22,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-
+import java.util.Arrays;
 import java.util.Collections;
-
-import java.util.*;
+import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,7 +51,8 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration Test for creating new invoice with no line item")
     public void testCreateInvoiceWithNoLineItem() throws Exception {
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(new ArrayList<>()).build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().author("Gokul").company(existingCompany).lineItems(new ArrayList<>()).build();
         mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
@@ -73,10 +73,11 @@ public class InvoiceControllerIntTest {
                                     .build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
         Invoice invoice = Invoice.builder()
                                     .lineItems(lineItemList)
                                     .author("Gokul")
-                                    .company("Cognizant")
+                                    .company(existingCompany)
                                     .build();
         mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
@@ -108,7 +109,8 @@ public class InvoiceControllerIntTest {
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
         lineItemList.add(lineItem2);
-        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company("Cognizant").build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company(existingCompany).build();
         mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
@@ -140,7 +142,8 @@ public class InvoiceControllerIntTest {
                             .build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company("Cognizant").build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company(existingCompany).build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
 
@@ -179,7 +182,8 @@ public class InvoiceControllerIntTest {
         LineItem lineItem = InvoiceTestHelper.getLineItem();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company("Cognizant").build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company(existingCompany).build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
 
@@ -290,7 +294,8 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration test throws exception when trying to add line item to paid invoice ")
     public void test_addLineItem_exceptionThrownWhenInvoiceIsPaid() throws Exception {
-        Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.PAID).company("Cognizant").build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.PAID).company(existingCompany).build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
 
@@ -312,8 +317,8 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration test throws exception when trying to modify paid invoice ")
     public void test_modifyPaidInvoice_throwsInvoiceModifyException() throws Exception {
-
-        Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.PAID).company("Cognizant").build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.PAID).company(existingCompany).build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
 
@@ -329,8 +334,8 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration test to modify unpaid invoice")
     public void test_modifyUnPaidInvoice_withPaidStatus() throws Exception {
-
-        Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.UNPAID).company("Cognizant").build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.UNPAID).company(existingCompany).build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
 
