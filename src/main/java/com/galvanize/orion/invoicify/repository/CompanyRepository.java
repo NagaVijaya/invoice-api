@@ -15,4 +15,6 @@ import java.util.UUID;
 public interface CompanyRepository extends JpaRepository<Company, UUID> {
 
     public List<Company> findAllByArchived(boolean archived);
+
+    public Company findByName(String name);
 }

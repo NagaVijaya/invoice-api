@@ -1,8 +1,10 @@
 package com.galvanize.orion.invoicify.service;
 
 import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
+import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
+import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
@@ -15,9 +17,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -114,5 +114,21 @@ public class CompanyServiceTest {
         });
         String actualMessage = exception.getMessage();
         assertEquals(Constants.DUPLICATE_COMPANY_MESSAGE, actualMessage);
+    }
+
+    @Test
+    public void testGetInvoiceByCompany(){
+
+        Company company = CompanyTestHelper.getCompanyWithInvoices();
+        when(companyRepository.findByName(anyString())).thenReturn(company);
+        List<Invoice> invoiceList = companyService.getInvoicesByCompanyName(company.getName());
+        assertEquals(invoiceList.size(), 2);
+        assertEquals(invoiceList.get(0).getStatus(), company.getInvoices().get(0).getStatus());
+        assertEquals(invoiceList.get(0).getAuthor(), company.getInvoices().get(0).getAuthor());
+        assertEquals(invoiceList.get(1).getStatus(), company.getInvoices().get(1).getStatus());
+        assertEquals(invoiceList.get(1).getAuthor(), company.getInvoices().get(1).getAuthor());
+
+        verify(companyRepository, times(1)).findByName(anyString());
+
     }
 }

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -151,6 +152,18 @@ public class CompanyControllerUnitTest {
                 .andExpect(jsonPath("$[1].city").value("Columbus"))
                 .andExpect(jsonPath("$[1].state").value("OH"))
                 .andExpect(jsonPath("$[1].zipCode").doesNotExist());
+    }
+
+    @Test
+    public void test_getInvoiceByCompany() throws Exception {
+        Company company = CompanyTestHelper.getCompanyWithInvoices();
+        when(companyService.getInvoicesByCompanyName(anyString())).thenReturn(company.getInvoices());
+
+        mockMvc.perform(get("/api/v1/companies/invoices/" + company.getName()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].author").value(company.getInvoices().get(0).getAuthor()))
+                .andExpect(jsonPath("$[1].author").value(company.getInvoices().get(1).getAuthor()));
     }
 
 }

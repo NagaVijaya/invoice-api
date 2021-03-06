@@ -2,6 +2,7 @@ package com.galvanize.orion.invoicify.service;
 
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
+import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import lombok.AllArgsConstructor;
@@ -46,5 +47,11 @@ public class CompanyService {
                 .collect(Collectors.toList());
 
         return simpleCompanies;
+    }
+
+    public List<Invoice> getInvoicesByCompanyName(String name) {
+        Company company = companyRepository.findByName(name);
+
+        return company.getInvoices();
     }
 }

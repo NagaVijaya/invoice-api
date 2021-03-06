@@ -134,4 +134,8 @@ public class InvoiceService {
         existingInvoice.setTotalCost(invoiceTotalCost);
         return existingInvoice;
     }
+
+    public List<Invoice> getInvoiceByCompany(String companyName) {
+        return null;
+    }
 }
