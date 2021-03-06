@@ -3,7 +3,9 @@ package com.galvanize.orion.invoicify.service;
 import com.galvanize.orion.invoicify.entities.Company;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
 
@@ -19,5 +21,12 @@ class CompanyServiceTest {
         companyService = new CompanyService();
         List<Company> result = companyService.getAllCompanies();
         assertEquals(0, result.size());
+    }
+
+    @Test
+    public void getAllCompaniesTest_withOneCompany() {
+        companyService = new CompanyService();
+        List<Company> result = companyService.getAllCompanies();
+        assertEquals(1, result.size());
     }
 }

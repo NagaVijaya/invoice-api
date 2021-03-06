@@ -8,7 +8,9 @@ import java.util.List;
 
 @Service
 public class CompanyService {
+
     public List<Company> getAllCompanies() {
+
         return new ArrayList<>();
     }
 
