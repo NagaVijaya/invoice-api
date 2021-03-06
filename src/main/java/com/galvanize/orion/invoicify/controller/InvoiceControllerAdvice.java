@@ -34,4 +34,13 @@ public class InvoiceControllerAdvice extends ResponseEntityExceptionHandler {
         String messageObject = objectMapper.writeValueAsString(invoicePaid);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_MODIFIED);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException illegalArgumentException, WebRequest webRequest) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode invoicePaid = objectMapper.createObjectNode();
+        invoicePaid.put(Constants.MESSAGE, illegalArgumentException.getMessage());
+        String messageObject = objectMapper.writeValueAsString(invoicePaid);
+        return new ResponseEntity<>(messageObject, HttpStatus.BAD_REQUEST);
+    }
 }
