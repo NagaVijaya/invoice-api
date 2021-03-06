@@ -1,4 +1,4 @@
-package com.galvanize.orion.invoicify.InvoiceHelper;
+package com.galvanize.orion.invoicify.TestHelper;
 
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;

@@ -4,11 +4,9 @@ package com.galvanize.orion.invoicify.controller;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.service.CompanyService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -16,10 +14,16 @@ import java.util.List;
 @AllArgsConstructor
 public class CompanyController {
 
-    CompanyService companyService;
+    private CompanyService companyService;
 
     @GetMapping("/companies")
     public List<Company> getAllCompanies() {
         return companyService.getAllCompanies();
+    }
+
+    @PostMapping("/company")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Company addCompany(@RequestBody Company company) {
+        return companyService.addCompany(company);
     }
 }

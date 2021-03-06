@@ -1,7 +1,7 @@
 package com.galvanize.orion.invoicify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
+import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
@@ -23,8 +23,6 @@ import java.util.ArrayList;
 
 import java.util.Collections;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 
 import static org.hamcrest.Matchers.hasSize;

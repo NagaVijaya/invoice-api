@@ -18,6 +18,7 @@ public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+    @Column(unique = true)
     private String name;
     private String address;
     private String city;
