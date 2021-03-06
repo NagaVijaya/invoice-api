@@ -1,6 +1,6 @@
 package com.galvanize.orion.invoicify.service;
 
-import com.galvanize.orion.invoicify.InvoiceHelper.InvoiceTestHelper;
+import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
