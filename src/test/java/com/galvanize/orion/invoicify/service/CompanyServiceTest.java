@@ -3,7 +3,6 @@ package com.galvanize.orion.invoicify.service;
 import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
-import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import org.junit.jupiter.api.Test;
@@ -12,11 +11,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import javax.transaction.Transactional;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.Arrays;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -35,7 +33,7 @@ public class CompanyServiceTest {
         Company company = CompanyTestHelper.getCompany1();
         Company createdCompany = CompanyTestHelper.getCompany1();
         createdCompany.setId(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
-        when(companyRepository.save(any())).thenReturn(createdCompany);
+        when(companyRepository.saveAndFlush(any())).thenReturn(createdCompany);
         Company expectedCompany = companyService.addCompany(company);
         assertEquals(expectedCompany.getId(), createdCompany.getId());
         assertEquals(expectedCompany.getAddress(), createdCompany.getAddress());
@@ -44,7 +42,7 @@ public class CompanyServiceTest {
         assertEquals(expectedCompany.getName(), createdCompany.getName());
         assertEquals(expectedCompany.getZipCode(), createdCompany.getZipCode());
 
-        verify(companyRepository, times(1)).save(any());
+        verify(companyRepository, times(1)).saveAndFlush(any());
     }
 
     @Test
@@ -52,7 +50,7 @@ public class CompanyServiceTest {
 
         CompanyService companyService = new CompanyService(companyRepository);
         Company company = CompanyTestHelper.getCompany1();
-        when(companyRepository.save(any())).thenThrow(DataIntegrityViolationException.class);
+        when(companyRepository.saveAndFlush(any())).thenThrow(DataIntegrityViolationException.class);
         Exception exception = assertThrows(DuplicateCompanyException.class, () -> {
             companyService.addCompany(company);
         });

@@ -4,6 +4,7 @@ import com.galvanize.orion.invoicify.entities.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.UniqueConstraint;
 import java.util.UUID;
 
 @Repository

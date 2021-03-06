@@ -11,8 +11,8 @@ import java.util.UUID;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "company", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 public class Company {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;

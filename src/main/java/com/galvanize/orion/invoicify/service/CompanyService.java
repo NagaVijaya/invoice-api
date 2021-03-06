@@ -16,8 +16,9 @@ public class CompanyService {
 
     public Company addCompany(Company company) throws DuplicateCompanyException {
         Company newCompany = null;
+
         try {
-            newCompany = companyRepository.save(company);
+            newCompany = companyRepository.saveAndFlush(company);
         } catch (DataIntegrityViolationException exception) {
             throw new DuplicateCompanyException();
         }

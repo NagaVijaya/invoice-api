@@ -26,6 +26,8 @@ public class CompanyController {
     @PostMapping("/company")
     @ResponseStatus(HttpStatus.CREATED)
     public Company addCompany(@RequestBody Company company) throws DuplicateCompanyException {
+
+
         return companyService.addCompany(company);
     }
 }

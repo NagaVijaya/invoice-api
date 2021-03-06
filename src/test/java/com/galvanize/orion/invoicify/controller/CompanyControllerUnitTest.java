@@ -3,8 +3,9 @@ package com.galvanize.orion.invoicify.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
 import com.galvanize.orion.invoicify.entities.Company;
+import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.service.CompanyService;
-import com.galvanize.orion.invoicify.utilities.StatusEnum;
+import com.galvanize.orion.invoicify.utilities.Constants;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -75,6 +76,20 @@ public class CompanyControllerUnitTest {
                 .andExpect(jsonPath("$.state").value(createdCompany.getState()))
                 .andExpect(jsonPath("$.city").value(createdCompany.getCity()))
                 .andExpect(jsonPath("$.zipCode").value(createdCompany.getZipCode()));
+        verify(companyService, times(1)).addCompany(any());
+    }
+
+    @Test
+    public void test_addDuplicateCompany() throws Exception {
+
+        Company company = CompanyTestHelper.getCompany1();
+
+        when(companyService.addCompany(any())).thenThrow(new DuplicateCompanyException());
+        mockMvc.perform(post("/api/v1/company")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(company)))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value(Constants.DUPLICATE_COMPANY_MESSAGE));
         verify(companyService, times(1)).addCompany(any());
     }
 }
