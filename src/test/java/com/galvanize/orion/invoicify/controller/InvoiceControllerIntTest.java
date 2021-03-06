@@ -6,6 +6,7 @@ import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
+import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.repository.LineItemRepository;
 import com.galvanize.orion.invoicify.testUtilities.InvoiceData;
@@ -46,18 +47,21 @@ public class InvoiceControllerIntTest {
     private LineItemRepository lineItemRepository;
 
     @Autowired
+    private CompanyRepository companyRepository;
+
+    @Autowired
     private ObjectMapper mapper;
 
     @Test
     @DisplayName("Integration Test for creating new invoice with no line item")
     public void testCreateInvoiceWithNoLineItem() throws Exception {
-        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company existingCompany = companyRepository.save(CompanyTestHelper.getCompany1());
         Invoice invoice = Invoice.builder().author("Gokul").company(existingCompany).lineItems(new ArrayList<>()).build();
         mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(invoice.getCompany()))
+                .andExpect(jsonPath("$.company.id").value(invoice.getCompany().getId().toString()))
                 .andExpect(jsonPath("$.totalCost").value(0))
                 .andExpect(jsonPath("$.createdDate").exists())
                 .andExpect(jsonPath("$.lineItems").isEmpty());
@@ -73,7 +77,7 @@ public class InvoiceControllerIntTest {
                                     .build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company existingCompany = companyRepository.save(CompanyTestHelper.getCompany1());
         Invoice invoice = Invoice.builder()
                                     .lineItems(lineItemList)
                                     .author("Gokul")
@@ -83,7 +87,7 @@ public class InvoiceControllerIntTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(invoice.getCompany()))
+                .andExpect(jsonPath("$.company.id").value(invoice.getCompany().getId().toString()))
                 .andExpect(jsonPath("$.totalCost").value(54))
                 .andExpect(jsonPath("$.createdDate").exists())
                 .andExpect(jsonPath("$.lineItems[0].id").exists())
@@ -109,13 +113,15 @@ public class InvoiceControllerIntTest {
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
         lineItemList.add(lineItem2);
-        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company existingCompany = companyRepository.save(CompanyTestHelper.getCompany1());
+
         Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company(existingCompany).build();
         mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(invoice.getCompany()))
+                .andExpect(jsonPath("$.company.id").value(invoice.getCompany().getId().toString()))
+                .andExpect(jsonPath("$.company.invoices").doesNotExist())
                 .andExpect(jsonPath("$.totalCost").value(100))
                 .andExpect(jsonPath("$.createdDate").exists())
                 .andExpect(jsonPath("$.lineItems", hasSize(2)))
@@ -142,7 +148,7 @@ public class InvoiceControllerIntTest {
                             .build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company existingCompany = companyRepository.save(CompanyTestHelper.getCompany1());
         Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company(existingCompany).build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
@@ -159,7 +165,7 @@ public class InvoiceControllerIntTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(existingInvoice.getId().toString()))
                 .andExpect(jsonPath("$.author").value(existingInvoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(existingInvoice.getCompany()))
+                .andExpect(jsonPath("$.company.id").value(existingInvoice.getCompany().getId().toString()))
                 .andExpect(jsonPath("$.totalCost").value(100))
                 .andExpect(jsonPath("$.createdDate").exists())
                 .andExpect(jsonPath("$.lineItems", hasSize(2)))
@@ -182,7 +188,7 @@ public class InvoiceControllerIntTest {
         LineItem lineItem = InvoiceTestHelper.getLineItem();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
-        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company existingCompany = companyRepository.save(CompanyTestHelper.getCompany1());
         Invoice invoice = Invoice.builder().lineItems(lineItemList).author("Gokul").company(existingCompany).build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
@@ -197,7 +203,7 @@ public class InvoiceControllerIntTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(existingInvoice.getId().toString()))
                 .andExpect(jsonPath("$.author").value(existingInvoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(existingInvoice.getCompany()))
+                .andExpect(jsonPath("$.company.id").value(existingInvoice.getCompany().getId().toString()))
                 .andExpect(jsonPath("$.totalCost").value(150))
                 .andExpect(jsonPath("$.createdDate").exists())
                 .andExpect(jsonPath("$.lineItems", hasSize(3)))
@@ -334,7 +340,7 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration test to modify unpaid invoice")
     public void test_modifyUnPaidInvoice_withPaidStatus() throws Exception {
-        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company existingCompany = companyRepository.save(CompanyTestHelper.getCompany1());
         Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.UNPAID).company(existingCompany).build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();

@@ -49,7 +49,7 @@ public class InvoiceControllerUnitTest {
                 .content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(invoice.getCompany()));
+                .andExpect(jsonPath("$.company.id").value(invoice.getCompany().getId().toString()));
 
         verify(invoiceService, times(1)).createInvoice(any());
     }
@@ -172,7 +172,7 @@ public class InvoiceControllerUnitTest {
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Collections.singletonList(lineItem))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(invoice.getCompany()));
+                .andExpect(jsonPath("$.company.id").value(invoice.getCompany().getId().toString()));
 
         verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
     }
@@ -192,7 +192,7 @@ public class InvoiceControllerUnitTest {
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Arrays.asList(lineItem, lineItem2))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(invoice.getCompany()))
+                .andExpect(jsonPath("$.company.id").value(invoice.getCompany().getId().toString()))
                 .andExpect(jsonPath("$.lineItems", hasSize(2)));
 
         verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
@@ -228,7 +228,7 @@ public class InvoiceControllerUnitTest {
                 .content(mapper.writeValueAsString(modifiedInvoice)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.author").value(modifiedInvoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(modifiedInvoice.getCompany()))
+                .andExpect(jsonPath("$.company.id").value(modifiedInvoice.getCompany().getId().toString()))
                 .andExpect(jsonPath("$.status").value(StatusEnum.PAID.toString()))
                 .andExpect(jsonPath("$.modifiedDate").exists());
         verify(invoiceService, times(1)).updateInvoice(any());

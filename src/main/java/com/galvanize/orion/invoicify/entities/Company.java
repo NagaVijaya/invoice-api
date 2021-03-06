@@ -1,11 +1,9 @@
 package com.galvanize.orion.invoicify.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,7 +11,6 @@ import java.util.UUID;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class Company {
 
     @Id
@@ -25,6 +22,6 @@ public class Company {
     private String city;
     private String state;
     private String zipCode;
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Invoice> invoices;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "company")
+    private List<Invoice> invoices = new ArrayList<>();
 }

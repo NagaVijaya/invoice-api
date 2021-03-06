@@ -1,6 +1,6 @@
 package com.galvanize.orion.invoicify.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,8 +24,8 @@ public class Invoice {
     private UUID id;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<LineItem> lineItems;
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("invoices")
     private Company company;
     private BigDecimal totalCost;
     private StatusEnum status;
