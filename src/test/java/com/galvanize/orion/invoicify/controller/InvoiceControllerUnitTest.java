@@ -9,6 +9,7 @@ import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.service.InvoiceService;
+import com.galvanize.orion.invoicify.utilities.Constants;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,21 @@ public class InvoiceControllerUnitTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
                 .andExpect(jsonPath("$.company.id").value(invoice.getCompany().getId().toString()));
+
+        verify(invoiceService, times(1)).createInvoice(any());
+    }
+
+
+    @Test
+    public void test_addInvoiceWithTooBigOfDiscount_exceptionThrownDiscountOutOfRange() throws Exception {
+        Invoice invoice = InvoiceTestHelper.getUnpaidInvoice();
+        invoice.setDiscountPercent(BigDecimal.valueOf(110));
+        when(invoiceService.createInvoice(any())).thenThrow(new IllegalArgumentException(Constants.DISCOUNT_OUT_OF_BOUNDS));
+
+        mockMvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(invoice)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(Constants.DISCOUNT_OUT_OF_BOUNDS));
 
         verify(invoiceService, times(1)).createInvoice(any());
     }
@@ -213,6 +229,7 @@ public class InvoiceControllerUnitTest {
                 .andExpect(jsonPath("$.message").value("Invoice does not exist"));
         verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
     }
+
 
     @Test
     public void modifyUnpaidInvoice_withPaidStatus() throws Exception {
