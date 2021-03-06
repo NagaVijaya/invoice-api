@@ -1,6 +1,7 @@
 package com.galvanize.orion.invoicify.controller;
 
 
+import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.service.CompanyService;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,11 @@ public class CompanyController {
     @GetMapping("/companies")
     public List<Company> getAllCompanies() {
         return companyService.getAllCompanies();
+    }
+
+    @GetMapping("/companies/simple")
+    public List<SimpleCompany> getAllSimpleCompanies() {
+        return companyService.getAllSimpleCompanies();
     }
 
     @PostMapping("/company")

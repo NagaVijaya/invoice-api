@@ -25,7 +25,7 @@ public class CompanyService {
     }
 
     public List<SimpleCompany> getAllSimpleCompanies() {
-        List<Company> companyList = getAllCompanies();
+        List<Company> companyList = companyRepository.findAllByArchived(false);
         List<SimpleCompany> simpleCompanies = companyList.stream()
                 .map(company -> SimpleCompany.builder()
                                 .name(company.getName())
