@@ -10,4 +10,6 @@ public class CompanyService {
     public List<Company> getAllCompanies() {
         return null;
     }
+
+
 }

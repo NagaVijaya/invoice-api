@@ -1,5 +1,6 @@
 package com.galvanize.orion.invoicify.controller;
 
+import com.galvanize.orion.invoicify.InvoiceHelper.CompanyTestHelper;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.service.CompanyService;
 import org.junit.jupiter.api.Test;
@@ -56,9 +57,7 @@ public class CompanyControllerUnitTest {
     @Test
     public void test_getAllCompanies_returnsSingleCompany() throws Exception {
         List<Company> companyList = new ArrayList<>();
-        Company companyOne = Company.builder()
-                                    .name("Company One")
-                                    .build();
+        Company companyOne = CompanyTestHelper.getCompanyOne();
         companyList.add(companyOne);
         when(companyService.getAllCompanies()).thenReturn(companyList);
 
@@ -67,5 +66,20 @@ public class CompanyControllerUnitTest {
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("Company One"));
+    }
+
+    @Test
+    public void test_getAllCompanies_returnsMultipleCompanies() throws Exception {
+        List<Company> companyList = new ArrayList<>();
+        companyList.add(CompanyTestHelper.getCompanyOne());
+        companyList.add(CompanyTestHelper.getCompanyTwo());
+        when(companyService.getAllCompanies()).thenReturn(companyList);
+
+        mockMvc.perform(get("/api/v1/companies"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Company One"))
+                .andExpect(jsonPath("$[1].name").value("Company Two"));
     }
 }
