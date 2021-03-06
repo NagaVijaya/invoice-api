@@ -43,6 +43,20 @@ class CompanyServiceTest {
         when(companyRepository.findAll()).thenReturn(companies);
         List<Company> result = companyService.getAllCompanies();
         assertEquals(1, result.size());
+        assertEquals(CompanyTestHelper.getCompanyOne(), result.get(0));
+        verify(companyRepository, times(1)).findAll();
+    }
+
+    @Test
+    public void getAllCompaniesTest_withMultipleCompanies() {
+        List<Company> companies = new ArrayList<>();
+        companies.add(CompanyTestHelper.getCompanyOne());
+        companies.add(CompanyTestHelper.getCompanyTwo());
+        when(companyRepository.findAll()).thenReturn(companies);
+        List<Company> result = companyService.getAllCompanies();
+        assertEquals(2, result.size());
+        assertEquals(CompanyTestHelper.getCompanyOne(), result.get(0));
+        assertEquals(CompanyTestHelper.getCompanyTwo(), result.get(1));
         verify(companyRepository, times(1)).findAll();
     }
 
