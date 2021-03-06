@@ -1,6 +1,7 @@
 package com.galvanize.orion.invoicify.service;
 
 import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
+import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,20 @@ class CompanyServiceTest {
         assertEquals(CompanyTestHelper.getCompanyOne(), result.get(0));
         assertEquals(CompanyTestHelper.getCompanyTwo(), result.get(1));
         verify(companyRepository, times(1)).findAllByArchived(false);
+    }
+
+    @Test
+    public void getAllSimpleCompaniesTest() {
+        List<Company> companies = new ArrayList<>();
+        companies.add(CompanyTestHelper.getCompanyOne());
+        companies.add(CompanyTestHelper.getCompanyTwo());
+        when(companyRepository.findAllByArchived(false)).thenReturn(companies);
+        List<SimpleCompany> result = companyService.getAllSimpleCompanies();
+        assertEquals(2, result.size());
+        assertEquals(CompanyTestHelper.getCompanyOne().getName(), result.get(0).getName());
+        assertEquals(CompanyTestHelper.getCompanyTwo().getName(), result.get(1).getName());
+        verify(companyRepository, times(1)).findAllByArchived(false);
+
     }
 
     @Test
