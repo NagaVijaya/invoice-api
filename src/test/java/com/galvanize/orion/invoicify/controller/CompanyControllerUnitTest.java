@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
+import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.service.CompanyService;
 import com.galvanize.orion.invoicify.utilities.Constants;
@@ -20,8 +21,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -73,8 +73,8 @@ public class CompanyControllerUnitTest {
         createdCompany.setId(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
         when(companyService.addCompany(any())).thenReturn(createdCompany);
         mockMvc.perform(post("/api/v1/company")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(company)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(company)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.name").value(createdCompany.getName()))
@@ -151,6 +151,45 @@ public class CompanyControllerUnitTest {
                 .andExpect(jsonPath("$[1].city").value("Columbus"))
                 .andExpect(jsonPath("$[1].state").value("OH"))
                 .andExpect(jsonPath("$[1].zipCode").doesNotExist());
+    }
+
+    @Test
+    public void test_modifyCompany() throws Exception {
+
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+
+        when(companyService.modifyCompany(any(), any())).thenReturn(modifiedCompany);
+        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifiedCompany)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(modifiedCompany.getId().toString()))
+                .andExpect(jsonPath("$.name").value(modifiedCompany.getName()))
+                .andExpect(jsonPath("$.address").value(modifiedCompany.getAddress()))
+                .andExpect(jsonPath("$.state").value(modifiedCompany.getState()))
+                .andExpect(jsonPath("$.city").value(modifiedCompany.getCity()))
+                .andExpect(jsonPath("$.zipCode").value(modifiedCompany.getZipCode()));
+        verify(companyService, times(1)).modifyCompany(any(), any());
+    }
+
+    @Test
+    public void test_modifyNonExistentCompany_throws_CompanyDoesNotExist() throws Exception {
+
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setId(UUID.randomUUID());
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+
+        when(companyService.modifyCompany(any(), any())).thenThrow(new CompanyDoesNotExist());
+        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifiedCompany)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(Constants.COMPANY_DOES_NOT_EXIST));
+
+        verify(companyService, times(1)).modifyCompany(any(), any());
     }
 
 }
