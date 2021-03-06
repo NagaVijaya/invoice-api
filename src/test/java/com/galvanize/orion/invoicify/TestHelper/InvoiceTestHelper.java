@@ -1,5 +1,6 @@
 package com.galvanize.orion.invoicify.TestHelper;
 
+import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
@@ -32,19 +33,22 @@ public class InvoiceTestHelper {
     }
 
     public static Invoice getInvoiceWithOneLineItem() {
-        return Invoice.builder().author("Gokul").company("Cognizant").lineItems(Collections.singletonList(getLineItem())).build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        return Invoice.builder().author("Gokul").company(existingCompany).lineItems(Collections.singletonList(getLineItem())).build();
     }
 
     public static Invoice getInvoiceWithTwoLineItem() {
-        return Invoice.builder().author("Gokul").company("Cognizant").lineItems(getLineItemListWithTwoLineItem()).build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        return Invoice.builder().author("Gokul").company(existingCompany).lineItems(getLineItemListWithTwoLineItem()).build();
     }
 
 
     public static Invoice getUnpaidInvoice() {
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
         return Invoice.builder()
                 .id(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3"))
                 .author("Gokul")
-                .company("Cognizant")
+                .company(existingCompany)
                 .status(StatusEnum.UNPAID)
                 .lineItems(Collections.singletonList(getLineItem()))
                 .createdDate(new Date())
@@ -52,10 +56,11 @@ public class InvoiceTestHelper {
     }
 
     public static Invoice getPaidInvoice() {
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
         return Invoice.builder()
                 .id(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b4"))
                 .author("Jenn")
-                .company("Cognizant")
+                .company(existingCompany)
                 .status(StatusEnum.PAID)
                 .lineItems(Collections.singletonList(getLineItem()))
                 .build();
@@ -64,10 +69,11 @@ public class InvoiceTestHelper {
     public static Invoice getPaidInvoiceWith1YearOld1() {
         LocalDate createdDateLocal = LocalDate.now();
         createdDateLocal = createdDateLocal.minusYears(1);
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
         return Invoice.builder()
                 .id(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3"))
                 .author("Gokul")
-                .company("Cognizant")
+                .company(existingCompany)
                 .status(StatusEnum.PAID)
                 .lineItems(Collections.singletonList(getLineItem()))
                 .createdDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
@@ -77,10 +83,11 @@ public class InvoiceTestHelper {
     public static Invoice getUnpaidInvoiceWith1YearOld2() {
         LocalDate createdDateLocal = LocalDate.now();
         createdDateLocal = createdDateLocal.minusYears(1);
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
         return Invoice.builder()
                 .id(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3"))
                 .author("Gokul")
-                .company("Cognizant")
+                .company(existingCompany)
                 .status(StatusEnum.UNPAID)
                 .lineItems(Collections.singletonList(getLineItem()))
                 .createdDate(Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
@@ -88,10 +95,11 @@ public class InvoiceTestHelper {
     }
 
     public static Invoice getUnpaidDiscountedInvoice() {
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
         return Invoice.builder()
                 .id(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b5"))
                 .author("Gokul")
-                .company("Cognizant")
+                .company(existingCompany)
                 .discountPercent(BigDecimal.valueOf(10))
                 .status(StatusEnum.UNPAID)
                 .totalCost(BigDecimal.valueOf(100))

@@ -1,7 +1,9 @@
 package com.galvanize.orion.invoicify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
 import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
+import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
@@ -40,13 +42,15 @@ public class InvoiceControllerUnitTest {
 
     @Test
     public void createInvoiceCallsInvoiceService() throws Exception {
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(new ArrayList<>()).build();
+
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().author("Gokul").company(existingCompany).lineItems(new ArrayList<>()).build();
         when(invoiceService.createInvoice(any())).thenReturn(invoice);
         mockMvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(invoice)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(invoice.getCompany()));
+                .andExpect(jsonPath("$.company.id").value(invoice.getCompany().getId().toString()));
 
         verify(invoiceService, times(1)).createInvoice(any());
     }
@@ -172,7 +176,8 @@ public class InvoiceControllerUnitTest {
 
     @Test
     public void addLineItemToExistingInvoice() throws Exception {
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(new ArrayList<>()).build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().author("Gokul").company(existingCompany).lineItems(new ArrayList<>()).build();
         LineItem lineItem = LineItem.builder()
                 .description("project 1")
                 .quantity(10)
@@ -183,14 +188,15 @@ public class InvoiceControllerUnitTest {
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Collections.singletonList(lineItem))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(invoice.getCompany()));
+                .andExpect(jsonPath("$.company.id").value(invoice.getCompany().getId().toString()));
 
         verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
     }
 
     @Test
     public void addMultipleLineItemToExistingInvoice() throws Exception {
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(new ArrayList<>()).build();
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder().author("Gokul").company(existingCompany).lineItems(new ArrayList<>()).build();
         LineItem lineItem = LineItem.builder()
                 .description("project 1")
                 .quantity(10)
@@ -202,7 +208,7 @@ public class InvoiceControllerUnitTest {
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b3").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Arrays.asList(lineItem, lineItem2))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.author").value(invoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(invoice.getCompany()))
+                .andExpect(jsonPath("$.company.id").value(invoice.getCompany().getId().toString()))
                 .andExpect(jsonPath("$.lineItems", hasSize(2)));
 
         verify(invoiceService, times(1)).addLineItemToInvoice(any(), any());
@@ -211,11 +217,11 @@ public class InvoiceControllerUnitTest {
     @Test
     public void test_addLineItem_exceptionThrownWhenInvoiceDoesNotExist() throws Exception {
         LineItem lineItem2 = LineItem.builder()
-                                    .description("project 2")
-                                    .quantity(10)
-                                    .rate(BigDecimal.valueOf(4.6))
-                                    .build();
-        when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenThrow( new InvoiceNotFoundException());
+                .description("project 2")
+                .quantity(10)
+                .rate(BigDecimal.valueOf(4.6))
+                .build();
+        when(invoiceService.addLineItemToInvoice(any(UUID.class), any())).thenThrow(new InvoiceNotFoundException());
 
         mockMvc.perform(put("/api/v1/invoice/4fa30ded-c47c-436a-9616-7e3b36be84b2").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(Arrays.asList(lineItem2))))
@@ -228,7 +234,8 @@ public class InvoiceControllerUnitTest {
     @Test
     public void modifyUnpaidInvoice_withPaidStatus() throws Exception {
         Invoice modifiedInvoice = InvoiceTestHelper.getUnpaidInvoice();
-        modifiedInvoice.setCompany("Dunder Mifflin");
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedInvoice.setCompany(existingCompany);
         modifiedInvoice.setAuthor("Michael Scott");
         modifiedInvoice.setStatus(StatusEnum.PAID);
         modifiedInvoice.setModifiedDate(new Date());
@@ -238,7 +245,7 @@ public class InvoiceControllerUnitTest {
                 .content(mapper.writeValueAsString(modifiedInvoice)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.author").value(modifiedInvoice.getAuthor()))
-                .andExpect(jsonPath("$.company").value(modifiedInvoice.getCompany()))
+                .andExpect(jsonPath("$.company.id").value(modifiedInvoice.getCompany().getId().toString()))
                 .andExpect(jsonPath("$.status").value(StatusEnum.PAID.toString()))
                 .andExpect(jsonPath("$.modifiedDate").exists());
         verify(invoiceService, times(1)).updateInvoice(any());
@@ -248,7 +255,8 @@ public class InvoiceControllerUnitTest {
     @Test
     public void modifyPaidInvoice_throwsException() throws Exception {
         Invoice modifiedInvoice = InvoiceTestHelper.getPaidInvoice();
-        modifiedInvoice.setCompany("Dunder Mifflin");
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedInvoice.setCompany(existingCompany);
         modifiedInvoice.setAuthor("Michael Scott");
 
         when(invoiceService.updateInvoice(any())).thenThrow(new InvoicePaidException());

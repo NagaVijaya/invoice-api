@@ -1,20 +1,18 @@
 package com.galvanize.orion.invoicify.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Table(name = "company", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 public class Company {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
@@ -25,4 +23,6 @@ public class Company {
     private String state;
     private String zipCode;
     private boolean archived;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "company")
+    private List<Invoice> invoices = new ArrayList<>();
 }

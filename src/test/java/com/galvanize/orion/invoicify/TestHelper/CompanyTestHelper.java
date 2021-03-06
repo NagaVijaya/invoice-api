@@ -3,38 +3,51 @@ package com.galvanize.orion.invoicify.TestHelper;
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 
-public class CompanyTestHelper {
+import java.util.UUID;
 
+public class CompanyTestHelper {
     public static Company getCompany1() {
-        return Company.builder()
-                .name("Company1")
-                .address("Bucklands hills drive")
-                .state("ON")
-                .city("Mississauga")
-                .zipCode("L6H0K1")
-                .build();
+
+        Company company = new Company();
+        company.setAddress("Bucklands hills drive");
+        company.setCity("Mississauga");
+        company.setState("ON");
+        company.setZipCode("L6H0K1");
+        company.setName("Company1");
+        return company;
+    }
+
+    public static Company getExistingCompany1() {
+        Company company = new Company();
+        company.setAddress("Bucklands hills drive");
+        company.setCity("Mississauga");
+        company.setState("ON");
+        company.setZipCode("L6H0K1");
+        company.setName("Company1");
+        company.setId(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+        return company;
     }
 
     public static Company getCompanyOne() {
-        Company companyOne = Company.builder()
-                .name("Company One")
-                .address("123 Seasame st")
-                .state("IL")
-                .city("Chicago")
-                .zipCode("60601")
-                .build();
+        Company companyOne = new Company();
+        companyOne.setName("Company One");
+        companyOne.setAddress("123 Seasame st");
+        companyOne.setState("IL");
+        companyOne.setCity("Chicago");
+        companyOne.setZipCode("60601");
+
         return companyOne;
     }
 
     public static Company getCompanyTwo() {
-        Company companyOne = Company.builder()
-                .name("Company Two")
-                .address("123 High St")
-                .state("OH")
-                .city("Columbus")
-                .zipCode("40288")
-                .build();
-        return companyOne;
+        Company companyTwo = new Company();
+        companyTwo.setName("Company Two");
+        companyTwo.setAddress("123 High St");
+        companyTwo.setState("OH");
+        companyTwo.setCity("Columbus");
+        companyTwo.setZipCode("40288");
+
+        return companyTwo;
     }
 
     public static SimpleCompany getSimpleCompanyOne() {
@@ -56,14 +69,13 @@ public class CompanyTestHelper {
     }
 
     public static Company getArchivedCompany() {
-        Company archivedCompany = Company.builder()
-                .name("Archived Company")
-                .address("632 Pitchfork Dr")
-                .state("CO")
-                .city("Colorado Springs")
-                .zipCode("60622")
-                .archived(true)
-                .build();
+        Company archivedCompany = new Company();
+        archivedCompany.setName("Archived Company");
+        archivedCompany.setAddress("632 Pitchfork Dr");
+        archivedCompany.setState("CO");
+        archivedCompany.setCity("Colorado Springs");
+        archivedCompany.setZipCode("60622");
+        archivedCompany.setArchived(true);
         return archivedCompany;
     }
 }

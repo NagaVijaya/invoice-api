@@ -13,6 +13,7 @@ public class Constants {
     public static final String INVOICE_PAID_CANNOT_BE_MODIFIED = "Invoice paid, cannot be modified";
     public static final String INVOICE_DOES_NOT_EXIST = "Invoice does not exist";
     public static final boolean FALSE = false;
+    public static final String DUPLICATE_COMPANY_MESSAGE = "Company already exist" ;
     public static final BigDecimal ONE_HUNDRED_PERCENT = BigDecimal.valueOf(100.00);
     public static final Range<BigDecimal> DISCOUNT_RANGE = Range.between(BigDecimal.ZERO, ONE_HUNDRED_PERCENT);
     public static final String DISCOUNT_OUT_OF_BOUNDS = "Discount percent out of bounds";
