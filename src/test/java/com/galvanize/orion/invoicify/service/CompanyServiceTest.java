@@ -30,21 +30,21 @@ class CompanyServiceTest {
 
     @Test
     public void getAllCompaniesTest_withZeroCompanies() {
-        when(companyRepository.findAll()).thenReturn(new ArrayList<>());
+        when(companyRepository.findAllByArchived(false)).thenReturn(new ArrayList<>());
         List<Company> result = companyService.getAllCompanies();
         assertEquals(0, result.size());
-        verify(companyRepository, times(1)).findAll();
+        verify(companyRepository, times(1)).findAllByArchived(false);
     }
 
     @Test
     public void getAllCompaniesTest_withOneCompany() {
         List<Company> companies = new ArrayList<>();
         companies.add(CompanyTestHelper.getCompanyOne());
-        when(companyRepository.findAll()).thenReturn(companies);
+        when(companyRepository.findAllByArchived(false)).thenReturn(companies);
         List<Company> result = companyService.getAllCompanies();
         assertEquals(1, result.size());
         assertEquals(CompanyTestHelper.getCompanyOne(), result.get(0));
-        verify(companyRepository, times(1)).findAll();
+        verify(companyRepository, times(1)).findAllByArchived(false);
     }
 
     @Test
@@ -52,14 +52,13 @@ class CompanyServiceTest {
         List<Company> companies = new ArrayList<>();
         companies.add(CompanyTestHelper.getCompanyOne());
         companies.add(CompanyTestHelper.getCompanyTwo());
-        when(companyRepository.findAll()).thenReturn(companies);
+        when(companyRepository.findAllByArchived(false)).thenReturn(companies);
         List<Company> result = companyService.getAllCompanies();
         assertEquals(2, result.size());
         assertEquals(CompanyTestHelper.getCompanyOne(), result.get(0));
         assertEquals(CompanyTestHelper.getCompanyTwo(), result.get(1));
-        verify(companyRepository, times(1)).findAll();
+        verify(companyRepository, times(1)).findAllByArchived(false);
     }
-
 
     @Test
     public void test_addCompany() {

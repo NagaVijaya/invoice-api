@@ -15,7 +15,7 @@ public class CompanyService {
 
     public List<Company> getAllCompanies() {
 
-        return companyRepository.findAll();
+        return companyRepository.findAllByArchived(false);
     }
 
     public Company addCompany(Company company) {
