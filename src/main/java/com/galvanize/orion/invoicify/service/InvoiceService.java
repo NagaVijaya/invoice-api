@@ -23,13 +23,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.galvanize.orion.invoicify.utilities.Constants.*;
+
 @Service
 @AllArgsConstructor
 public class InvoiceService {
 
     private InvoiceRepository invoiceRepository;
 
-    public Invoice createInvoice(Invoice invoice) {
+    public Invoice createInvoice(Invoice invoice) throws IllegalAccessException {
 
         //Calculate the cost for each line item and add that cost to invoice
         calculateLineItemsTotalCost(invoice);
@@ -46,7 +48,7 @@ public class InvoiceService {
         return page.getContent();
     }
 
-    public Invoice addLineItemToInvoice(UUID invoiceId, List<LineItem> lineItemList) throws InvoiceNotFoundException, InvoicePaidException {
+    public Invoice addLineItemToInvoice(UUID invoiceId, List<LineItem> lineItemList) throws InvoiceNotFoundException, InvoicePaidException, IllegalAccessException {
 
         Invoice existingInvoice = checkValidInvoice(invoiceId);
         List <LineItem> existingInvoiceLineItems = existingInvoice.getLineItems();
@@ -59,7 +61,7 @@ public class InvoiceService {
         return invoiceRepository.save(existingInvoice);
     }
 
-    public Invoice updateInvoice(Invoice invoice) throws InvoicePaidException, InvoiceNotFoundException {
+    public Invoice updateInvoice(Invoice invoice) throws InvoicePaidException, InvoiceNotFoundException, IllegalAccessException {
         checkValidInvoice(invoice.getId());
         calculateLineItemsTotalCost(invoice);
         invoice.setModifiedDate(new Date());
@@ -110,7 +112,8 @@ public class InvoiceService {
         return existingInvoice;
     }
 
-    private Invoice calculateLineItemsTotalCost(Invoice existingInvoice) {
+    private Invoice calculateLineItemsTotalCost(Invoice existingInvoice) throws IllegalAccessException {
+
         List<LineItem> lineItemList = existingInvoice.getLineItems();
 
         BigDecimal invoiceTotalCost = BigDecimal.ZERO;
@@ -120,6 +123,8 @@ public class InvoiceService {
             invoiceTotalCost = invoiceTotalCost.add(itemCost);
         }
         if (existingInvoice.getDiscountPercent() != null) {
+            if (!DISCOUNT_RANGE.contains(existingInvoice.getDiscountPercent()))
+                throw new IllegalArgumentException(DISCOUNT_OUT_OF_BOUNDS);
             BigDecimal discountAmount = existingInvoice.getDiscountPercent().divide(BigDecimal.valueOf(100)).multiply(invoiceTotalCost);
             invoiceTotalCost = invoiceTotalCost.subtract(discountAmount);
         }
