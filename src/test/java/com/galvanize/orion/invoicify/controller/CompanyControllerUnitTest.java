@@ -2,9 +2,9 @@ package com.galvanize.orion.invoicify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
+import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.service.CompanyService;
-import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -38,20 +38,25 @@ public class CompanyControllerUnitTest {
 
     @Test
     public void test_getAllCompaniesEndPoint_returnsOk() throws Exception {
+        when(companyService.getAllCompanies()).thenReturn(new ArrayList<>());
+
         mockMvc.perform(get("/api/v1/companies"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void test_getAllInvoices_returnsObject() throws Exception {
+    public void test_getAllCompanies_returnsObject() throws Exception {
+        when(companyService.getAllCompanies()).thenReturn(new ArrayList<>());
+
         mockMvc.perform(get("/api/v1/companies"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists());
     }
 
     @Test
-    public void test_getAllInvoices_returns_emptyList() throws Exception {
-        List<String> companyList = new ArrayList<>();
+    public void test_getAllCompanies_returns_emptyList() throws Exception {
+        when(companyService.getAllCompanies()).thenReturn(new ArrayList<>());
+
         mockMvc.perform(get("/api/v1/companies"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
@@ -77,4 +82,59 @@ public class CompanyControllerUnitTest {
                 .andExpect(jsonPath("$.zipCode").value(createdCompany.getZipCode()));
         verify(companyService, times(1)).addCompany(any());
     }
+
+    @Test
+    public void test_getAllCompanies_returnsSingleCompany() throws Exception {
+        List<Company> companyList = new ArrayList<>();
+        Company companyOne = CompanyTestHelper.getCompanyOne();
+        companyList.add(companyOne);
+        when(companyService.getAllCompanies()).thenReturn(companyList);
+
+        mockMvc.perform(get("/api/v1/companies"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].name").value("Company One"));
+    }
+
+    @Test
+    public void test_getAllCompanies_returnsMultipleCompanies() throws Exception {
+        List<Company> companyList = new ArrayList<>();
+        companyList.add(CompanyTestHelper.getCompanyOne());
+        companyList.add(CompanyTestHelper.getCompanyTwo());
+        when(companyService.getAllCompanies()).thenReturn(companyList);
+
+        mockMvc.perform(get("/api/v1/companies"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Company One"))
+                .andExpect(jsonPath("$[0].address").exists())
+                .andExpect(jsonPath("$[1].name").value("Company Two"))
+                .andExpect(jsonPath("$[1].address").exists());
+    }
+
+    @Test
+    public void test_getAllSimpleCompanies_returnsMultipleCompanies() throws Exception {
+        List<SimpleCompany> companyList = new ArrayList<>();
+        companyList.add(CompanyTestHelper.getSimpleCompanyOne());
+        companyList.add(CompanyTestHelper.getSimpleCompanyTwo());
+        when(companyService.getAllSimpleCompanies()).thenReturn(companyList);
+
+        mockMvc.perform(get("/api/v1/companies/simple"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Company One"))
+                .andExpect(jsonPath("$[0].city").value("Chicago"))
+                .andExpect(jsonPath("$[0].state").value("IL"))
+                .andExpect(jsonPath("$[0].address").doesNotExist())
+                .andExpect(jsonPath("$[0].zipCode").doesNotExist())
+                .andExpect(jsonPath("$[1].name").value("Company Two"))
+                .andExpect(jsonPath("$[1].address").doesNotExist())
+                .andExpect(jsonPath("$[1].city").value("Columbus"))
+                .andExpect(jsonPath("$[1].state").value("OH"))
+                .andExpect(jsonPath("$[1].zipCode").doesNotExist());
+    }
+
 }

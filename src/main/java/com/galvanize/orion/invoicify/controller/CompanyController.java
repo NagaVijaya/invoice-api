@@ -1,13 +1,13 @@
 package com.galvanize.orion.invoicify.controller;
 
 
+import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.service.CompanyService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -18,8 +18,13 @@ public class CompanyController {
     private CompanyService companyService;
 
     @GetMapping("/companies")
-    public List<String> getAllCompanies() {
-        return new ArrayList<>();
+    public List<Company> getAllCompanies() {
+        return companyService.getAllCompanies();
+    }
+
+    @GetMapping("/companies/simple")
+    public List<SimpleCompany> getAllSimpleCompanies() {
+        return companyService.getAllSimpleCompanies();
     }
 
     @PostMapping("/company")
