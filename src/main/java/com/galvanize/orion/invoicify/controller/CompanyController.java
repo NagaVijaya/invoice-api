@@ -2,6 +2,7 @@ package com.galvanize.orion.invoicify.controller;
 
 
 import com.galvanize.orion.invoicify.entities.Company;
+import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.service.CompanyService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ public class CompanyController {
 
     @PostMapping("/company")
     @ResponseStatus(HttpStatus.CREATED)
-    public Company addCompany(@RequestBody Company company) {
+    public Company addCompany(@RequestBody Company company) throws DuplicateCompanyException {
         return companyService.addCompany(company);
     }
 }
