@@ -29,7 +29,7 @@ public class InvoiceServiceTest {
     private InvoiceRepository invoiceRepository;
 
     @Test
-    public void testCreateInvoiceNoLineIem() {
+    public void testCreateInvoiceNoLineIem() throws IllegalAccessException {
         Invoice invoice = Invoice.builder()
                                  .author("Gokul")
                                  .company("Cognizant")
@@ -51,13 +51,18 @@ public class InvoiceServiceTest {
     }
 
     @Test
-    public void testCreateInvoiceMultipleLineIem() {
+    public void testCreateInvoiceMultipleLineIem() throws IllegalAccessException {
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(BigDecimal.valueOf(5.4)).build();
         LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(BigDecimal.valueOf(4.6)).build();
         List<LineItem> lineItemList = new ArrayList<>();
         lineItemList.add(lineItem);
         lineItemList.add(lineItem2);
-        Invoice invoice = Invoice.builder().author("Gokul").company("Cognizant").lineItems(lineItemList).build();
+        Invoice invoice = Invoice.builder()
+                .author("Gokul")
+                .company("Cognizant")
+                .lineItems(lineItemList)
+                .discountPercent(BigDecimal.valueOf(100.00))
+                .build();
         Invoice expectedInvoice = Invoice.builder()
                                         .author("Gokul")
                                         .company("Cognizant")
@@ -65,6 +70,7 @@ public class InvoiceServiceTest {
                                         .totalCost(BigDecimal
                                         .valueOf(100))
                                         .createdDate(new Date())
+                                        .discountPercent(BigDecimal.valueOf(100.00))
                                         .build();
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         when(invoiceRepository.save(any())).thenReturn(expectedInvoice);
@@ -73,6 +79,7 @@ public class InvoiceServiceTest {
         assertEquals(expectedInvoice.getCompany(), actualInvoice.getCompany());
         assertEquals(expectedInvoice.getTotalCost(), actualInvoice.getTotalCost());
         assertEquals(expectedInvoice.getCreatedDate(), actualInvoice.getCreatedDate());
+        assertEquals(expectedInvoice.getDiscountPercent(), actualInvoice.getDiscountPercent());
         assertEquals(expectedInvoice.getLineItems().size(), 2);
         assertEquals(expectedInvoice.getLineItems().get(0).getFee(), BigDecimal.valueOf(54.0));
         assertEquals(expectedInvoice.getLineItems().get(1).getFee(), BigDecimal.valueOf(46.0));
@@ -80,7 +87,44 @@ public class InvoiceServiceTest {
     }
 
     @Test
-    public void testAddLineItemToExistingInvoice() throws InvoiceNotFoundException, InvoicePaidException {
+    public void test_CreateInvoiceWithDiscountGreaterThanAmount() {
+        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(BigDecimal.valueOf(5.4)).build();
+        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(BigDecimal.valueOf(4.6)).build();
+        List<LineItem> lineItemList = new ArrayList<>();
+        lineItemList.add(lineItem);
+        lineItemList.add(lineItem2);
+        Invoice invoice = Invoice.builder()
+                .author("Gokul")
+                .company("Cognizant")
+                .lineItems(lineItemList)
+                .discountPercent(BigDecimal.valueOf(100.01))
+                .build();
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> invoiceService.createInvoice(invoice));
+        assertEquals("Discount percent out of bounds", illegalArgumentException.getMessage());
+    }
+
+    @Test
+    public void test_CreateInvoiceWithDiscountLessThanZero() {
+        LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(BigDecimal.valueOf(5.4)).build();
+        LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(BigDecimal.valueOf(4.6)).build();
+        List<LineItem> lineItemList = new ArrayList<>();
+        lineItemList.add(lineItem);
+        lineItemList.add(lineItem2);
+        Invoice invoice = Invoice.builder()
+                .author("Gokul")
+                .company("Cognizant")
+                .lineItems(lineItemList)
+                .discountPercent(BigDecimal.valueOf(-0.01))
+                .build();
+        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> invoiceService.createInvoice(invoice));
+        assertEquals("Discount percent out of bounds", illegalArgumentException.getMessage());
+    }
+
+
+    @Test
+    public void testAddLineItemToExistingInvoice() throws InvoiceNotFoundException, InvoicePaidException, IllegalAccessException {
 
         UUID uid = UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b3");
 
@@ -104,6 +148,7 @@ public class InvoiceServiceTest {
                                             .company("Cognizant")
                                             .lineItems(lineItemList1)
                                             .totalCost(BigDecimal.valueOf(100))
+                                            .discountPercent(BigDecimal.valueOf(10.00))
                                             .createdDate(new Date()).build();
 
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
@@ -218,7 +263,7 @@ public class InvoiceServiceTest {
     }
 
     @Test
-    public void testUpdateUnPaidInvoice_toPaidStatus() throws InvoicePaidException, InvoiceNotFoundException {
+    public void testUpdateUnPaidInvoice_toPaidStatus() throws InvoicePaidException, InvoiceNotFoundException, IllegalAccessException {
         Invoice existingInvoice = InvoiceTestHelper.getUnpaidInvoice();
         Optional<Invoice> existingOptInvoice = Optional.of(existingInvoice);
         Invoice modifiedInvoice = InvoiceTestHelper.getPaidInvoice();
@@ -309,7 +354,7 @@ public class InvoiceServiceTest {
     }
 
     @Test
-    public void testCreateInvoiceWithDiscount_withUnpaidInvoice() {
+    public void testCreateInvoiceWithDiscount_withUnpaidInvoice() throws IllegalAccessException {
         Invoice unpaidInvoice = InvoiceTestHelper.getUnpaidDiscountedInvoice();
         InvoiceService invoiceService = new InvoiceService(invoiceRepository);
 
