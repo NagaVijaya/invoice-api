@@ -126,9 +126,13 @@ public class CompanyControllerUnitTest {
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].name").value("Company One"))
+                .andExpect(jsonPath("$[0].city").value("Chicago"))
+                .andExpect(jsonPath("$[0].state").value("IL"))
                 .andExpect(jsonPath("$[0].address").doesNotExist())
                 .andExpect(jsonPath("$[1].name").value("Company Two"))
-                .andExpect(jsonPath("$[1].address").doesNotExist());
+                .andExpect(jsonPath("$[1].address").doesNotExist())
+                .andExpect(jsonPath("$[1].city").value("Columbus"))
+                .andExpect(jsonPath("$[1].state").value("OH"));
     }
 
 }

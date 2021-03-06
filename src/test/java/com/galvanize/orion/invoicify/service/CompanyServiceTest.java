@@ -70,7 +70,11 @@ class CompanyServiceTest {
         List<SimpleCompany> result = companyService.getAllSimpleCompanies();
         assertEquals(2, result.size());
         assertEquals(CompanyTestHelper.getCompanyOne().getName(), result.get(0).getName());
+        assertEquals(CompanyTestHelper.getCompanyOne().getCity(), result.get(0).getCity());
+        assertEquals(CompanyTestHelper.getCompanyOne().getState(), result.get(0).getState());
         assertEquals(CompanyTestHelper.getCompanyTwo().getName(), result.get(1).getName());
+        assertEquals(CompanyTestHelper.getCompanyTwo().getCity(), result.get(1).getCity());
+        assertEquals(CompanyTestHelper.getCompanyTwo().getState(), result.get(1).getState());
         verify(companyRepository, times(1)).findAllByArchived(false);
 
     }
