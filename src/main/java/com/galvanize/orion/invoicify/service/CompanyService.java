@@ -6,7 +6,6 @@ import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -56,5 +55,12 @@ public class CompanyService {
        if(!existingCompany.isPresent()) throw new CompanyDoesNotExist();
         company.setId(UUID.fromString(companyId));
         return companyRepository.saveAndFlush(company);
+    }
+
+    public Company deleteCompany(String companyId) throws CompanyDoesNotExist {
+        Optional<Company> existingCompany = companyRepository.findById(UUID.fromString(companyId));
+        if(!existingCompany.isPresent()) throw new CompanyDoesNotExist();
+        existingCompany.get().setArchived(true);
+        return companyRepository.saveAndFlush(existingCompany.get());
     }
 }

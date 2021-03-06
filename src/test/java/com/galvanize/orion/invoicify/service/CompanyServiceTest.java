@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -88,7 +87,7 @@ public class CompanyServiceTest {
     }
 
     @Test
-    public void test_addCompany() throws DuplicateCompanyException{
+    public void test_addCompany() throws DuplicateCompanyException {
 
         Company company = CompanyTestHelper.getCompany1();
         Company createdCompany = CompanyTestHelper.getCompany1();
@@ -106,7 +105,7 @@ public class CompanyServiceTest {
     }
 
     @Test
-    public void test_addDuplicateCompany() throws DuplicateCompanyException{
+    public void test_addDuplicateCompany() throws DuplicateCompanyException {
 
         CompanyService companyService = new CompanyService(companyRepository);
         Company company = CompanyTestHelper.getCompany1();
@@ -126,7 +125,7 @@ public class CompanyServiceTest {
         modifiedCompany.setCity("Austin");
         when(companyRepository.findById(any())).thenReturn(Optional.of(existingCompany));
         when(companyRepository.saveAndFlush(any())).thenReturn(modifiedCompany);
-        Company expectedCompany = companyService.modifyCompany(modifiedCompany.getId().toString(),modifiedCompany);
+        Company expectedCompany = companyService.modifyCompany(modifiedCompany.getId().toString(), modifiedCompany);
         assertEquals(expectedCompany.getId(), modifiedCompany.getId());
         assertEquals(expectedCompany.getAddress(), modifiedCompany.getAddress());
         assertEquals(expectedCompany.getState(), modifiedCompany.getState());
@@ -144,9 +143,36 @@ public class CompanyServiceTest {
         modifiedCompany.setCity("Austin");
         when(companyRepository.findById(any())).thenReturn(Optional.empty());
 
-        CompanyDoesNotExist companyDoesNotExist = assertThrows(CompanyDoesNotExist.class, () -> companyService.modifyCompany(modifiedCompany.getId().toString(),modifiedCompany));
+        CompanyDoesNotExist companyDoesNotExist = assertThrows(CompanyDoesNotExist.class, () -> companyService.modifyCompany(modifiedCompany.getId().toString(), modifiedCompany));
         assertEquals(Constants.COMPANY_DOES_NOT_EXIST, companyDoesNotExist.getMessage());
 
         verify(companyRepository, times(1)).findById(any());
     }
+
+    @Test
+    public void test_deleteCompany() throws CompanyDoesNotExist {
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company deleteCompany = CompanyTestHelper.getExistingCompany1();
+        deleteCompany.setArchived(true);
+        when(companyRepository.findById(any())).thenReturn(Optional.of(existingCompany));
+        when(companyRepository.saveAndFlush(any())).thenReturn(deleteCompany);
+        Company expectedCompany = companyService.deleteCompany(deleteCompany.getId().toString());
+        assertEquals(expectedCompany.getId(), deleteCompany.getId());
+        assertTrue(deleteCompany.isArchived());
+        verify(companyRepository, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    public void test_deleteNonExistentCompany_throws_CompanyDoesNotExist() {
+        Company deleteCompany = CompanyTestHelper.getExistingCompany1();
+        deleteCompany.setArchived(true);
+        when(companyRepository.findById(any())).thenReturn(Optional.empty());
+
+        CompanyDoesNotExist companyDoesNotExist = assertThrows(CompanyDoesNotExist.class, () -> companyService.deleteCompany(deleteCompany.getId().toString()));
+        assertEquals(Constants.COMPANY_DOES_NOT_EXIST, companyDoesNotExist.getMessage());
+
+        verify(companyRepository, times(1)).findById(any());
+    }
+
+
 }
