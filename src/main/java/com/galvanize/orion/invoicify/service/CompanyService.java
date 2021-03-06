@@ -53,7 +53,7 @@ public class CompanyService {
 
     public Company modifyCompany(String companyId ,Company company) throws CompanyDoesNotExist {
         Optional<Company> existingCompany = companyRepository.findById(UUID.fromString(companyId));
-       if(existingCompany.isEmpty()) throw new CompanyDoesNotExist();
+       if(!existingCompany.isPresent()) throw new CompanyDoesNotExist();
         company.setId(UUID.fromString(companyId));
         return companyRepository.saveAndFlush(company);
     }
