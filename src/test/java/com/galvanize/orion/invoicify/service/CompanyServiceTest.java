@@ -119,7 +119,7 @@ public class CompanyServiceTest {
     }
 
     @Test
-    public void test_modifyCompany() throws CompanyDoesNotExist {
+    public void test_modifyCompany() throws CompanyDoesNotExist, DuplicateCompanyException {
         Company existingCompany = CompanyTestHelper.getExistingCompany1();
         Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
         modifiedCompany.setZipCode("18654");
@@ -134,6 +134,26 @@ public class CompanyServiceTest {
         assertEquals(expectedCompany.getName(), modifiedCompany.getName());
         assertEquals(expectedCompany.getZipCode(), modifiedCompany.getZipCode());
 
+        verify(companyRepository, times(1)).findById(any());
+        verify(companyRepository, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    public void test_modifyCompany_throws_DuplicateCompanyException() throws CompanyDoesNotExist, DuplicateCompanyException {
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+
+        when(companyRepository.findById(any())).thenReturn(Optional.of(existingCompany));
+        when(companyRepository.saveAndFlush(any())).thenThrow(DataIntegrityViolationException.class);
+        Exception exception = assertThrows(DuplicateCompanyException.class, () -> {
+            companyService.modifyCompany(modifiedCompany.getId().toString(),modifiedCompany);
+        });
+        String actualMessage = exception.getMessage();
+        assertEquals(Constants.DUPLICATE_COMPANY_MESSAGE, actualMessage);
+
+        verify(companyRepository, times(1)).findById(any());
         verify(companyRepository, times(1)).saveAndFlush(any());
     }
 

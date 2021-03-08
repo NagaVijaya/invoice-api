@@ -51,10 +51,22 @@ public class CompanyService {
         return simpleCompanies;
     }
 
-    public Company modifyCompany(String companyId ,Company company) throws CompanyDoesNotExist {
+    public Company modifyCompany(String companyId ,Company company) throws CompanyDoesNotExist, DuplicateCompanyException {
         Optional<Company> existingCompany = companyRepository.findById(UUID.fromString(companyId));
-       if(!existingCompany.isPresent()) throw new CompanyDoesNotExist();
-        company.setId(UUID.fromString(companyId));
-        return companyRepository.saveAndFlush(company);
+        if (!existingCompany.isPresent()) throw new CompanyDoesNotExist();
+        //company.setId(existingCompany.get().getId());
+
+        Company toBeSavedCompany = existingCompany.get();
+        toBeSavedCompany.setCity(company.getCity());
+        toBeSavedCompany.setAddress(company.getAddress());
+        toBeSavedCompany.setZipCode(company.getZipCode());
+        toBeSavedCompany.setState(company.getState());
+        toBeSavedCompany.setName(company.getName());
+        try {
+            toBeSavedCompany = companyRepository.saveAndFlush(toBeSavedCompany);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateCompanyException();
+        }
+        return toBeSavedCompany;
     }
 }

@@ -36,7 +36,7 @@ public class CompanyController {
     }
 
     @PutMapping("/company/{companyId}")
-    public Company modifyCompany(@PathVariable String companyId ,@RequestBody Company company) throws CompanyDoesNotExist {
+    public Company modifyCompany(@PathVariable String companyId ,@RequestBody Company company) throws CompanyDoesNotExist, DuplicateCompanyException {
 
         return companyService.modifyCompany(companyId, company);
     }

@@ -30,7 +30,7 @@ public class CompanyControllerAdvice extends ResponseEntityExceptionHandler {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode companyDoesNotExistObj = objectMapper.createObjectNode();
         companyDoesNotExistObj.put(Constants.MESSAGE, companyDoesNotExist.getMessage());
-        String messageObject = objectMapper.writeValueAsString(companyDoesNotExist);
+        String messageObject = objectMapper.writeValueAsString(companyDoesNotExistObj);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_FOUND);
     }
 }

@@ -136,6 +136,29 @@ public class CompanyControllerIntTest {
     }
 
     @Test
+    public void test_modifyCompany_throws_DuplicateCompanyException() throws Exception {
+
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setName("Pre-modified");
+        existingCompany = companyRepository.saveAndFlush(existingCompany);
+        modifiedCompany = companyRepository.saveAndFlush(modifiedCompany);
+
+        modifiedCompany.setName(existingCompany.getName());
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+
+
+        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifiedCompany)))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value(Constants.DUPLICATE_COMPANY_MESSAGE));
+
+
+    }
+
+    @Test
     public void test_modifyNonExistentCompany_throws_CompanyDoesNotExist() throws Exception {
 
         Company modifiedCompany = CompanyTestHelper.getExistingCompany1();

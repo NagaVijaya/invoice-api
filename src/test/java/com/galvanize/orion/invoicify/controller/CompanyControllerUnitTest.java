@@ -175,6 +175,24 @@ public class CompanyControllerUnitTest {
     }
 
     @Test
+    public void test_modifyCompany_throws_DuplicateCompanyException() throws Exception {
+
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setId(UUID.randomUUID());
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+
+        when(companyService.modifyCompany(any(), any())).thenThrow(new DuplicateCompanyException());
+        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifiedCompany)))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value(Constants.DUPLICATE_COMPANY_MESSAGE));
+
+        verify(companyService, times(1)).modifyCompany(any(), any());
+    }
+
+    @Test
     public void test_modifyNonExistentCompany_throws_CompanyDoesNotExist() throws Exception {
 
         Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
