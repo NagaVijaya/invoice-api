@@ -5,6 +5,7 @@ import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
+import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
@@ -19,6 +20,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -120,7 +125,59 @@ public class CompanyServiceTest {
     }
 
     @Test
-    public void testGetInvoiceByCompany(){
+    public void test_modifyCompany() throws CompanyDoesNotExist, DuplicateCompanyException {
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+        when(companyRepository.findById(any())).thenReturn(Optional.of(existingCompany));
+        when(companyRepository.saveAndFlush(any())).thenReturn(modifiedCompany);
+        Company expectedCompany = companyService.modifyCompany(modifiedCompany.getId().toString(),modifiedCompany);
+        assertEquals(expectedCompany.getId(), modifiedCompany.getId());
+        assertEquals(expectedCompany.getAddress(), modifiedCompany.getAddress());
+        assertEquals(expectedCompany.getState(), modifiedCompany.getState());
+        assertEquals(expectedCompany.getCity(), modifiedCompany.getCity());
+        assertEquals(expectedCompany.getName(), modifiedCompany.getName());
+        assertEquals(expectedCompany.getZipCode(), modifiedCompany.getZipCode());
+
+        verify(companyRepository, times(1)).findById(any());
+        verify(companyRepository, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    public void test_modifyCompany_throws_DuplicateCompanyException() throws CompanyDoesNotExist, DuplicateCompanyException {
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+
+        when(companyRepository.findById(any())).thenReturn(Optional.of(existingCompany));
+        when(companyRepository.saveAndFlush(any())).thenThrow(DataIntegrityViolationException.class);
+        Exception exception = assertThrows(DuplicateCompanyException.class, () -> {
+            companyService.modifyCompany(modifiedCompany.getId().toString(),modifiedCompany);
+        });
+        String actualMessage = exception.getMessage();
+        assertEquals(Constants.DUPLICATE_COMPANY_MESSAGE, actualMessage);
+
+        verify(companyRepository, times(1)).findById(any());
+        verify(companyRepository, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    public void test_modifyNonExistentCompany_throws_CompanyDoesNotExist() {
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+        when(companyRepository.findById(any())).thenReturn(Optional.empty());
+
+        CompanyDoesNotExist companyDoesNotExist = assertThrows(CompanyDoesNotExist.class, () -> companyService.modifyCompany(modifiedCompany.getId().toString(),modifiedCompany));
+        assertEquals(Constants.COMPANY_DOES_NOT_EXIST, companyDoesNotExist.getMessage());
+
+        verify(companyRepository, times(1)).findById(any());
+    }
+
+    @Test
+    public void testGetInvoiceByCompany() throws CompanyDoesNotExist {
 
         Company company = CompanyTestHelper.getCompanyWithInvoices();
         when(invoiceRepository.findByCompany_Name(anyString())).thenReturn(company.getInvoices());
@@ -130,6 +187,17 @@ public class CompanyServiceTest {
         assertEquals(invoiceList.get(0).getAuthor(), company.getInvoices().get(0).getAuthor());
         assertEquals(invoiceList.get(1).getStatus(), company.getInvoices().get(1).getStatus());
         assertEquals(invoiceList.get(1).getAuthor(), company.getInvoices().get(1).getAuthor());
+
+        verify(invoiceRepository, times(1)).findByCompany_Name(anyString());
+    }
+
+    @Test
+    public void testGetInvoiceByCompany_throwsException(){
+
+        Company company = CompanyTestHelper.getCompanyWithInvoices();
+        when(invoiceRepository.findByCompany_Name(anyString())).thenReturn(new ArrayList<>());
+        CompanyDoesNotExist companyDoesNotExist = assertThrows(CompanyDoesNotExist.class, () -> companyService.getInvoicesByCompanyName("Non Existing name"));
+        assertEquals(Constants.COMPANY_DOES_NOT_EXIST, companyDoesNotExist.getMessage());
 
         verify(invoiceRepository, times(1)).findByCompany_Name(anyString());
 

@@ -3,6 +3,7 @@ package com.galvanize.orion.invoicify.service;
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
+import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
@@ -12,6 +13,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,8 +54,32 @@ public class CompanyService {
         return simpleCompanies;
     }
 
-    public List<Invoice> getInvoicesByCompanyName(String name) {
+    public Company modifyCompany(String companyId ,Company company) throws CompanyDoesNotExist, DuplicateCompanyException {
+        Optional<Company> existingCompany = companyRepository.findById(UUID.fromString(companyId));
+        if (!existingCompany.isPresent()) throw new CompanyDoesNotExist();
+        //company.setId(existingCompany.get().getId());
+
+        Company toBeSavedCompany = existingCompany.get();
+        toBeSavedCompany.setCity(company.getCity());
+        toBeSavedCompany.setAddress(company.getAddress());
+        toBeSavedCompany.setZipCode(company.getZipCode());
+        toBeSavedCompany.setState(company.getState());
+        toBeSavedCompany.setName(company.getName());
+        try {
+            toBeSavedCompany = companyRepository.saveAndFlush(toBeSavedCompany);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateCompanyException();
+        }
+        return toBeSavedCompany;
+    }
+
+    public List<Invoice> getInvoicesByCompanyName(String name) throws CompanyDoesNotExist {
         List<Invoice> invoiceList = invoiceRepository.findByCompany_Name(name);
+
+        if(null == invoiceList || invoiceList.size() ==0){
+            throw new CompanyDoesNotExist();
+        }
+
 
         return invoiceList;
     }
