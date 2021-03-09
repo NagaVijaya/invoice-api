@@ -7,6 +7,7 @@ import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
+import com.galvanize.orion.invoicify.exception.UnpaidInvoiceExistException;
 import com.galvanize.orion.invoicify.service.CompanyService;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import org.junit.jupiter.api.Test;
@@ -210,6 +211,35 @@ public class CompanyControllerUnitTest {
                 .andExpect(jsonPath("$.city").value(deleteCompany.getCity()))
                 .andExpect(jsonPath("$.archived").value(true))
                 .andExpect(jsonPath("$.zipCode").value(deleteCompany.getZipCode()));
+        verify(companyService, times(1)).deleteCompany(any());
+    }
+
+    @Test
+    public void test_deleteNonExistentCompany_throws_CompanyDoesNotExist() throws Exception {
+
+        Company deleteCompany = CompanyTestHelper.getExistingCompany1();
+
+        when(companyService.deleteCompany(deleteCompany.getId().toString())).thenThrow(new CompanyDoesNotExist());
+
+        mockMvc.perform(delete("/api/v1/company/"+deleteCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(deleteCompany)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(Constants.COMPANY_DOES_NOT_EXIST));
+        verify(companyService, times(1)).deleteCompany(any());
+    }
+
+    @Test
+    public void test_deleteCompany_throws_UnpaidInvoiceExist() throws Exception {
+
+        Company deleteCompany = CompanyTestHelper.getCompanyWithInvoices();
+        when(companyService.deleteCompany(deleteCompany.getId().toString())).thenThrow(new UnpaidInvoiceExistException());
+
+        mockMvc.perform(delete("/api/v1/company/"+deleteCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(deleteCompany)))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value(Constants.UNPAID_INVOICE_EXIST_CAN_NOT_DELETE_COMPANY));
         verify(companyService, times(1)).deleteCompany(any());
     }
 

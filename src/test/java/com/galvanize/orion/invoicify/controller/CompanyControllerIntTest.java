@@ -2,10 +2,14 @@ package com.galvanize.orion.invoicify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
+import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Company;
+import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
+import com.galvanize.orion.invoicify.exception.UnpaidInvoiceExistException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
+import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import org.junit.jupiter.api.Test;
@@ -44,6 +48,9 @@ public class CompanyControllerIntTest {
 
     @Autowired
     private CompanyRepository companyRepository;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
 
     @Test
     public void test_addCompany() throws Exception {
@@ -122,7 +129,7 @@ public class CompanyControllerIntTest {
         modifiedCompany.setZipCode("18654");
         modifiedCompany.setCity("Austin");
 
-        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+        mockMvc.perform(put("/api/v1/company/" + modifiedCompany.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(modifiedCompany)))
                 .andExpect(status().isOk())
@@ -144,12 +151,59 @@ public class CompanyControllerIntTest {
         modifiedCompany.setCity("Austin");
 
 
-        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+        mockMvc.perform(put("/api/v1/company/" + modifiedCompany.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(modifiedCompany)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(Constants.COMPANY_DOES_NOT_EXIST));
 
 
+    }
+
+    @Test
+    public void test_deleteCompany() throws Exception {
+
+        Company deleteCompany = CompanyTestHelper.getExistingCompany1();
+        deleteCompany = companyRepository.saveAndFlush(deleteCompany);
+        deleteCompany.setArchived(true);
+
+        mockMvc.perform(delete("/api/v1/company/" + deleteCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(deleteCompany)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(deleteCompany.getId().toString()))
+                .andExpect(jsonPath("$.name").value(deleteCompany.getName()))
+                .andExpect(jsonPath("$.address").value(deleteCompany.getAddress()))
+                .andExpect(jsonPath("$.state").value(deleteCompany.getState()))
+                .andExpect(jsonPath("$.city").value(deleteCompany.getCity()))
+                .andExpect(jsonPath("$.archived").value(true))
+                .andExpect(jsonPath("$.zipCode").value(deleteCompany.getZipCode()));
+    }
+
+    @Test
+    public void test_deleteNonExistentCompany_throws_CompanyDoesNotExist() throws Exception {
+        Company deleteCompany = CompanyTestHelper.getExistingCompany1();
+        deleteCompany.setArchived(true);
+
+        mockMvc.perform(delete("/api/v1/company/" + deleteCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(deleteCompany)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(Constants.COMPANY_DOES_NOT_EXIST));
+    }
+
+    @Test
+    public void test_deleteCompany_throws_UnpaidInvoiceExist() throws Exception {
+
+        Company deleteCompany = CompanyTestHelper.getCompany1();
+        deleteCompany = companyRepository.saveAndFlush(deleteCompany);
+        Invoice unpaidInvoice = InvoiceTestHelper.getUnpaidInvoice();
+        unpaidInvoice.setCompany(deleteCompany);
+       // invoiceRepository.saveAndFlush(unpaidInvoice);
+        mockMvc.perform(delete("/api/v1/company/" + deleteCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(deleteCompany)))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value(Constants.UNPAID_INVOICE_EXIST_CAN_NOT_DELETE_COMPANY));
     }
 }

@@ -5,6 +5,7 @@ import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
+import com.galvanize.orion.invoicify.exception.UnpaidInvoiceExistException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import org.junit.jupiter.api.Test;
@@ -150,7 +151,7 @@ public class CompanyServiceTest {
     }
 
     @Test
-    public void test_deleteCompany() throws CompanyDoesNotExist {
+    public void test_deleteCompany() throws CompanyDoesNotExist, UnpaidInvoiceExistException {
         Company existingCompany = CompanyTestHelper.getExistingCompany1();
         Company deleteCompany = CompanyTestHelper.getExistingCompany1();
         deleteCompany.setArchived(true);
@@ -171,6 +172,15 @@ public class CompanyServiceTest {
         CompanyDoesNotExist companyDoesNotExist = assertThrows(CompanyDoesNotExist.class, () -> companyService.deleteCompany(deleteCompany.getId().toString()));
         assertEquals(Constants.COMPANY_DOES_NOT_EXIST, companyDoesNotExist.getMessage());
 
+        verify(companyRepository, times(1)).findById(any());
+    }
+
+    @Test
+    public void test_deleteCompany_throws_UnpaidInvoiceExist() {
+        Company deleteCompany = CompanyTestHelper.getCompanyWithInvoices();
+        when(companyRepository.findById(any())).thenReturn(Optional.of(deleteCompany));
+        UnpaidInvoiceExistException unpaidInvoiceExistException = assertThrows(UnpaidInvoiceExistException.class, () -> companyService.deleteCompany(deleteCompany.getId().toString()));
+        assertEquals(Constants.UNPAID_INVOICE_EXIST_CAN_NOT_DELETE_COMPANY, unpaidInvoiceExistException.getMessage());
         verify(companyRepository, times(1)).findById(any());
     }
 

@@ -2,7 +2,11 @@ package com.galvanize.orion.invoicify.TestHelper;
 
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
+import com.galvanize.orion.invoicify.entities.Invoice;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 public class CompanyTestHelper {
@@ -77,5 +81,20 @@ public class CompanyTestHelper {
         archivedCompany.setZipCode("60622");
         archivedCompany.setArchived(true);
         return archivedCompany;
+    }
+
+    public static Company getCompanyWithInvoices(){
+        Company company = new Company();
+        List<Invoice> invoiceList = Arrays.asList(InvoiceTestHelper.getPaidInvoice(),InvoiceTestHelper.getUnpaidInvoice());
+
+        company.setAddress("Bucklands hills drive");
+        company.setCity("Mississauga");
+        company.setState("ON");
+        company.setZipCode("L6H0K1");
+        company.setName("Company1");
+        company.setId(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+        company.setInvoices(invoiceList);
+        return company;
+
     }
 }

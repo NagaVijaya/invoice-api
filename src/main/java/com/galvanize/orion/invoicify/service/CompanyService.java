@@ -2,9 +2,12 @@ package com.galvanize.orion.invoicify.service;
 
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
+import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
+import com.galvanize.orion.invoicify.exception.UnpaidInvoiceExistException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
+import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,9 +61,17 @@ public class CompanyService {
         return companyRepository.saveAndFlush(company);
     }
 
-    public Company deleteCompany(String companyId) throws CompanyDoesNotExist {
+    public Company deleteCompany(String companyId) throws CompanyDoesNotExist,UnpaidInvoiceExistException {
         Optional<Company> existingCompany = companyRepository.findById(UUID.fromString(companyId));
         if(!existingCompany.isPresent()) throw new CompanyDoesNotExist();
+        List<Invoice> invoiceList = existingCompany.get().getInvoices();
+        AtomicBoolean unPaidInvoiceExist = new AtomicBoolean(false);
+        invoiceList.forEach(invoice -> { if(invoice.getStatus() == StatusEnum.UNPAID)
+           unPaidInvoiceExist.set(true);
+        });
+        if(unPaidInvoiceExist.get()){
+            throw new UnpaidInvoiceExistException();
+        }
         existingCompany.get().setArchived(true);
         return companyRepository.saveAndFlush(existingCompany.get());
     }
