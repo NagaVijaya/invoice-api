@@ -3,6 +3,7 @@ package com.galvanize.orion.invoicify.controller;
 
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
+import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.service.CompanyService;
@@ -39,5 +40,10 @@ public class CompanyController {
     public Company modifyCompany(@PathVariable String companyId ,@RequestBody Company company) throws CompanyDoesNotExist, DuplicateCompanyException {
 
         return companyService.modifyCompany(companyId, company);
+    }
+
+    @GetMapping("/companies/invoices/{companyName}")
+    public List<Invoice> getInvoicesByCompanyName(@PathVariable String companyName) throws CompanyDoesNotExist {
+        return companyService.getInvoicesByCompanyName(companyName);
     }
 }

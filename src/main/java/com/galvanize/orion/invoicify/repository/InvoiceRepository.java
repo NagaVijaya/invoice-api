@@ -18,4 +18,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     public List<Invoice> findByArchivedAndStatusAndCreatedDateBefore(boolean archived, StatusEnum status, Date lastYearDate);
 
     public Page<Invoice> findAllByArchived(boolean archived, Pageable pageable);
+
+    public List<Invoice> findByCompany_Name(String companyName);
 }

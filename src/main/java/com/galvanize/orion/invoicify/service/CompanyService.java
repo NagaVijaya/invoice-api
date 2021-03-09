@@ -2,9 +2,11 @@ package com.galvanize.orion.invoicify.service;
 
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
+import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
+import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class CompanyService {
 
     private CompanyRepository companyRepository;
+    private InvoiceRepository invoiceRepository;
 
     public List<Company> getAllCompanies() {
 
@@ -68,5 +71,17 @@ public class CompanyService {
             throw new DuplicateCompanyException();
         }
         return toBeSavedCompany;
+    }
+
+    public List<Invoice> getInvoicesByCompanyName(String name) throws CompanyDoesNotExist {
+
+        Company company = companyRepository.findByName(name);
+
+        if(null == company){
+            throw new CompanyDoesNotExist();
+        }
+        List<Invoice> invoiceList = invoiceRepository.findByCompany_Name(name);
+
+        return invoiceList;
     }
 }

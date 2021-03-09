@@ -106,4 +106,20 @@ public class InvoiceTestHelper {
                 .lineItems(Collections.singletonList(getLineItem4()))
                 .build();
     }
+
+    public static Invoice getUnpaidInvoiceListWithNoCompany1() {
+         return Invoice.builder()
+                .author("Gokul")
+                .status(StatusEnum.UNPAID)
+                .lineItems(Collections.singletonList(getLineItem4()))
+                .build();
+    }
+
+    public static Invoice getUnpaidInvoiceListWithNoCompany2() {
+        return Invoice.builder()
+                .author("Jenn")
+                .status(StatusEnum.UNPAID)
+                .lineItems(Collections.singletonList(getLineItem2()))
+                .build();
+    }
 }
