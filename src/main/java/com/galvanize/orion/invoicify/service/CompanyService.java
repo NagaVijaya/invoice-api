@@ -74,12 +74,13 @@ public class CompanyService {
     }
 
     public List<Invoice> getInvoicesByCompanyName(String name) throws CompanyDoesNotExist {
-        List<Invoice> invoiceList = invoiceRepository.findByCompany_Name(name);
 
-        if(null == invoiceList || invoiceList.size() ==0){
+        Company company = companyRepository.findByName(name);
+
+        if(null == company){
             throw new CompanyDoesNotExist();
         }
-
+        List<Invoice> invoiceList = invoiceRepository.findByCompany_Name(name);
 
         return invoiceList;
     }

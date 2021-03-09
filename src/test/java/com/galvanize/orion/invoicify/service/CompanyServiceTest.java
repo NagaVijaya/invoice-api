@@ -195,11 +195,11 @@ public class CompanyServiceTest {
     public void testGetInvoiceByCompany_throwsException(){
 
         Company company = CompanyTestHelper.getCompanyWithInvoices();
-        when(invoiceRepository.findByCompany_Name(anyString())).thenReturn(new ArrayList<>());
+        when(companyRepository.findByName(anyString())).thenReturn(null);
         CompanyDoesNotExist companyDoesNotExist = assertThrows(CompanyDoesNotExist.class, () -> companyService.getInvoicesByCompanyName("Non Existing name"));
         assertEquals(Constants.COMPANY_DOES_NOT_EXIST, companyDoesNotExist.getMessage());
 
-        verify(invoiceRepository, times(1)).findByCompany_Name(anyString());
+        verify(companyRepository, times(1)).findByName(anyString());
 
     }
 }
