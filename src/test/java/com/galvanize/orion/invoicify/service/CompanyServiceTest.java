@@ -181,6 +181,7 @@ public class CompanyServiceTest {
 
         Company company = CompanyTestHelper.getCompanyWithInvoices();
         when(invoiceRepository.findByCompany_Name(anyString())).thenReturn(company.getInvoices());
+        when(companyRepository.findByName(anyString())).thenReturn(company);
         List<Invoice> invoiceList = companyService.getInvoicesByCompanyName(company.getName());
         assertEquals(invoiceList.size(), 2);
         assertEquals(invoiceList.get(0).getStatus(), company.getInvoices().get(0).getStatus());

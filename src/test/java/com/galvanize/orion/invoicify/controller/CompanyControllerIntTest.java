@@ -201,7 +201,12 @@ public class CompanyControllerIntTest {
 
         mockMvc.perform(get("/api/v1/companies/invoices/" + companyFromDatabase.getName()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].author").value(invoice1.getAuthor()))
+                .andExpect(jsonPath("$[0].totalCost").value(100))
+                .andExpect(jsonPath("$[1].author").value(invoice2.getAuthor()))
+                .andExpect(jsonPath("$[1].totalCost").value(46));
+
     }
 
 
