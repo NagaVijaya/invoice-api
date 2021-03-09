@@ -17,4 +17,5 @@ public class Constants {
     public static final BigDecimal ONE_HUNDRED_PERCENT = BigDecimal.valueOf(100.00);
     public static final Range<BigDecimal> DISCOUNT_RANGE = Range.between(BigDecimal.ZERO, ONE_HUNDRED_PERCENT);
     public static final String DISCOUNT_OUT_OF_BOUNDS = "Discount percent out of bounds";
+    public static final String COMPANY_DOES_NOT_EXIST = "Company does not exist";
 }
