@@ -94,7 +94,7 @@ public class InvoiceService {
         LocalDate createdDateLocal = LocalDate.now().minusYears(1);
         Date lastYearDate = Date.from(createdDateLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-        List<Invoice> invoiceToArchive = invoiceRepository.findByArchivedAndStatusAndCreatedDateBefore(false, StatusEnum.UNPAID, lastYearDate);
+        List<Invoice> invoiceToArchive = invoiceRepository.findByArchivedAndStatusAndCreatedDateBefore(false, StatusEnum.PAID, lastYearDate);
         invoiceToArchive.forEach(invoice -> invoice.setArchived(true));
         invoiceRepository.saveAll(invoiceToArchive);
     }

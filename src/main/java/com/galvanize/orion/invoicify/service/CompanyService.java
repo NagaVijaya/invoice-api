@@ -3,12 +3,13 @@ package com.galvanize.orion.invoicify.service;
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
-import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
+import com.galvanize.orion.invoicify.exception.CompanyArchivedException;
+import com.galvanize.orion.invoicify.exception.CompanyDoesNotExistException;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
+import com.galvanize.orion.invoicify.utilities.Constants;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -54,12 +55,15 @@ public class CompanyService {
         return simpleCompanies;
     }
 
-    public Company modifyCompany(String companyId ,Company company) throws CompanyDoesNotExist, DuplicateCompanyException {
+    public Company modifyCompany(String companyId ,Company company) throws CompanyDoesNotExistException, DuplicateCompanyException, CompanyArchivedException {
         Optional<Company> existingCompany = companyRepository.findById(UUID.fromString(companyId));
-        if (!existingCompany.isPresent()) throw new CompanyDoesNotExist();
-        //company.setId(existingCompany.get().getId());
+        if (!existingCompany.isPresent()) throw new CompanyDoesNotExistException();
 
         Company toBeSavedCompany = existingCompany.get();
+        if(toBeSavedCompany.isArchived()){
+            throw new CompanyArchivedException(Constants.COMPANY_ARCHIVED);
+        }
+
         toBeSavedCompany.setCity(company.getCity());
         toBeSavedCompany.setAddress(company.getAddress());
         toBeSavedCompany.setZipCode(company.getZipCode());
@@ -73,12 +77,12 @@ public class CompanyService {
         return toBeSavedCompany;
     }
 
-    public List<Invoice> getInvoicesByCompanyName(String name) throws CompanyDoesNotExist {
+    public List<Invoice> getInvoicesByCompanyName(String name) throws CompanyDoesNotExistException {
 
         Company company = companyRepository.findByName(name);
 
         if(null == company){
-            throw new CompanyDoesNotExist();
+            throw new CompanyDoesNotExistException();
         }
         List<Invoice> invoiceList = invoiceRepository.findByCompany_Name(name);
 

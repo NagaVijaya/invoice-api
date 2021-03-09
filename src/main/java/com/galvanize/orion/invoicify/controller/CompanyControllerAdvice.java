@@ -3,9 +3,9 @@ package com.galvanize.orion.invoicify.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
+import com.galvanize.orion.invoicify.exception.CompanyArchivedException;
+import com.galvanize.orion.invoicify.exception.CompanyDoesNotExistException;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
-import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +25,22 @@ public class CompanyControllerAdvice extends ResponseEntityExceptionHandler {
         String messageObject = objectMapper.writeValueAsString(duplicateCompany);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_ACCEPTABLE);
     }
-    @ExceptionHandler(CompanyDoesNotExist.class)
-    public ResponseEntity<Object> handleCompanyDoesNotExistException(CompanyDoesNotExist companyDoesNotExist, WebRequest webRequest) throws JsonProcessingException {
+
+    @ExceptionHandler(CompanyDoesNotExistException.class)
+    public ResponseEntity<Object> handleCompanyDoesNotExistException(CompanyDoesNotExistException companyDoesNotExistException, WebRequest webRequest) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode companyDoesNotExistObj = objectMapper.createObjectNode();
-        companyDoesNotExistObj.put(Constants.MESSAGE, companyDoesNotExist.getMessage());
+        companyDoesNotExistObj.put(Constants.MESSAGE, companyDoesNotExistException.getMessage());
         String messageObject = objectMapper.writeValueAsString(companyDoesNotExistObj);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(CompanyArchivedException.class)
+    public ResponseEntity<Object> handleCompanyArchivedExceptionException(CompanyArchivedException companyArchivedException, WebRequest webRequest) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode companyDoesNotExistObj = objectMapper.createObjectNode();
+        companyDoesNotExistObj.put(Constants.MESSAGE, companyArchivedException.getMessage());
+        String messageObject = objectMapper.writeValueAsString(companyDoesNotExistObj);
+        return new ResponseEntity<>(messageObject, HttpStatus.BAD_REQUEST);
     }
 }
