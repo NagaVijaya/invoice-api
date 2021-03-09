@@ -18,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Propagation;
 
 import javax.persistence.EntityManager;
@@ -32,6 +33,12 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -143,6 +150,29 @@ public class CompanyControllerIntTest {
     }
 
     @Test
+    public void test_modifyCompany_throws_DuplicateCompanyException() throws Exception {
+
+        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setName("Pre-modified");
+        existingCompany = companyRepository.saveAndFlush(existingCompany);
+        modifiedCompany = companyRepository.saveAndFlush(modifiedCompany);
+
+        modifiedCompany.setName(existingCompany.getName());
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+
+
+        mockMvc.perform(put("/api/v1/company/" + modifiedCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifiedCompany)))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value(Constants.DUPLICATE_COMPANY_MESSAGE));
+
+
+    }
+
+    @Test
     public void test_modifyNonExistentCompany_throws_CompanyDoesNotExist() throws Exception {
 
         Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
@@ -199,11 +229,40 @@ public class CompanyControllerIntTest {
         deleteCompany = companyRepository.saveAndFlush(deleteCompany);
         Invoice unpaidInvoice = InvoiceTestHelper.getUnpaidInvoice();
         unpaidInvoice.setCompany(deleteCompany);
-       // invoiceRepository.saveAndFlush(unpaidInvoice);
+        unpaidInvoice = invoiceRepository.saveAndFlush(unpaidInvoice);
+        deleteCompany.getInvoices().add(unpaidInvoice);
+        deleteCompany = companyRepository.saveAndFlush(deleteCompany);
+
         mockMvc.perform(delete("/api/v1/company/" + deleteCompany.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(deleteCompany)))
                 .andExpect(status().isNotAcceptable())
                 .andExpect(jsonPath("$.message").value(Constants.UNPAID_INVOICE_EXIST_CAN_NOT_DELETE_COMPANY));
     }
+
+    @Test
+    public void test_getInvoicesByCompany_returnsListOfInvoices() throws Exception {
+        Company company = CompanyTestHelper.getCompany1();
+        Company companyFromDatabase = companyRepository.saveAndFlush(company);
+        Invoice invoice1 = InvoiceTestHelper.getUnpaidInvoiceListWithNoCompany1();
+        invoice1.setCompany(companyFromDatabase);
+        Invoice invoice2 = InvoiceTestHelper.getUnpaidInvoiceListWithNoCompany2();
+        invoice2.setCompany(companyFromDatabase);
+
+        mockMvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(invoice1)))
+                .andExpect(status().isCreated());
+        mockMvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(invoice2)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/v1/companies/invoices/" + companyFromDatabase.getName()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].author").value(invoice1.getAuthor()))
+                .andExpect(jsonPath("$[0].totalCost").value(100))
+                .andExpect(jsonPath("$[1].author").value(invoice2.getAuthor()))
+                .andExpect(jsonPath("$[1].totalCost").value(46));
+
+    }
+
+
 }

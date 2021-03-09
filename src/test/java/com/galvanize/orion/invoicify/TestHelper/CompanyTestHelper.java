@@ -83,7 +83,22 @@ public class CompanyTestHelper {
         return archivedCompany;
     }
 
-    public static Company getCompanyWithInvoices(){
+    public static Company getCompanyWithInvoices() {
+        Invoice invoice1 = InvoiceTestHelper.getInvoiceWithOneLineItem();
+        Invoice invoice2 = InvoiceTestHelper.getInvoiceWithTwoLineItem();
+        List<Invoice> invoiceList = Arrays.asList(invoice1, invoice2);
+        Company company = new Company();
+        company.setName("Archived Company");
+        company.setAddress("632 Pitchfork Dr");
+        company.setState("CO");
+        company.setCity("Colorado Springs");
+        company.setZipCode("60622");
+        company.setArchived(true);
+        company.setInvoices(invoiceList);
+        return company;
+    }
+
+    public static Company getCompanyWithInvoicesList(){
         Company company = new Company();
         List<Invoice> invoiceList = Arrays.asList(InvoiceTestHelper.getPaidInvoice(),InvoiceTestHelper.getUnpaidInvoice());
 

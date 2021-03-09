@@ -8,6 +8,7 @@ import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.exception.UnpaidInvoiceExistException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
+import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class CompanyService {
 
     private CompanyRepository companyRepository;
+    private InvoiceRepository invoiceRepository;
 
     public List<Company> getAllCompanies() {
 
@@ -54,11 +56,35 @@ public class CompanyService {
         return simpleCompanies;
     }
 
-    public Company modifyCompany(String companyId ,Company company) throws CompanyDoesNotExist {
+    public Company modifyCompany(String companyId ,Company company) throws CompanyDoesNotExist, DuplicateCompanyException {
         Optional<Company> existingCompany = companyRepository.findById(UUID.fromString(companyId));
-       if(!existingCompany.isPresent()) throw new CompanyDoesNotExist();
-        company.setId(UUID.fromString(companyId));
-        return companyRepository.saveAndFlush(company);
+        if (!existingCompany.isPresent()) throw new CompanyDoesNotExist();
+        //company.setId(existingCompany.get().getId());
+
+        Company toBeSavedCompany = existingCompany.get();
+        toBeSavedCompany.setCity(company.getCity());
+        toBeSavedCompany.setAddress(company.getAddress());
+        toBeSavedCompany.setZipCode(company.getZipCode());
+        toBeSavedCompany.setState(company.getState());
+        toBeSavedCompany.setName(company.getName());
+        try {
+            toBeSavedCompany = companyRepository.saveAndFlush(toBeSavedCompany);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateCompanyException();
+        }
+        return toBeSavedCompany;
+    }
+
+    public List<Invoice> getInvoicesByCompanyName(String name) throws CompanyDoesNotExist {
+
+        Company company = companyRepository.findByName(name);
+
+        if(null == company){
+            throw new CompanyDoesNotExist();
+        }
+        List<Invoice> invoiceList = invoiceRepository.findByCompany_Name(name);
+
+        return invoiceList;
     }
 
     public Company deleteCompany(String companyId) throws CompanyDoesNotExist,UnpaidInvoiceExistException {

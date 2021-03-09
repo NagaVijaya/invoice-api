@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -156,6 +157,18 @@ public class CompanyControllerUnitTest {
     }
 
     @Test
+    public void test_getInvoiceByCompany() throws Exception {
+        Company company = CompanyTestHelper.getCompanyWithInvoices();
+        when(companyService.getInvoicesByCompanyName(anyString())).thenReturn(company.getInvoices());
+
+        mockMvc.perform(get("/api/v1/companies/invoices/" + company.getName()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].author").value(company.getInvoices().get(0).getAuthor()))
+                .andExpect(jsonPath("$[1].author").value(company.getInvoices().get(1).getAuthor()));
+    }
+
+    @Test
     public void test_modifyCompany() throws Exception {
 
         Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
@@ -173,6 +186,24 @@ public class CompanyControllerUnitTest {
                 .andExpect(jsonPath("$.state").value(modifiedCompany.getState()))
                 .andExpect(jsonPath("$.city").value(modifiedCompany.getCity()))
                 .andExpect(jsonPath("$.zipCode").value(modifiedCompany.getZipCode()));
+        verify(companyService, times(1)).modifyCompany(any(), any());
+    }
+
+    @Test
+    public void test_modifyCompany_throws_DuplicateCompanyException() throws Exception {
+
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setId(UUID.randomUUID());
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+
+        when(companyService.modifyCompany(any(), any())).thenThrow(new DuplicateCompanyException());
+        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifiedCompany)))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value(Constants.DUPLICATE_COMPANY_MESSAGE));
+
         verify(companyService, times(1)).modifyCompany(any(), any());
     }
 
@@ -232,7 +263,7 @@ public class CompanyControllerUnitTest {
     @Test
     public void test_deleteCompany_throws_UnpaidInvoiceExist() throws Exception {
 
-        Company deleteCompany = CompanyTestHelper.getCompanyWithInvoices();
+        Company deleteCompany = CompanyTestHelper.getCompanyWithInvoicesList();
         when(companyService.deleteCompany(deleteCompany.getId().toString())).thenThrow(new UnpaidInvoiceExistException());
 
         mockMvc.perform(delete("/api/v1/company/"+deleteCompany.getId().toString())

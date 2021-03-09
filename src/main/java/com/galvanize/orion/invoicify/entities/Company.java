@@ -23,6 +23,6 @@ public class Company {
     private String state;
     private String zipCode;
     private boolean archived;
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "company")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "company")
     private List<Invoice> invoices = new ArrayList<>();
 }
