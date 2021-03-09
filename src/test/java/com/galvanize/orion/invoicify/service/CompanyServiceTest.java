@@ -7,6 +7,7 @@ import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
+import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +32,9 @@ public class CompanyServiceTest {
 
     @MockBean
     private CompanyRepository companyRepository;
+
+    @MockBean
+    private InvoiceRepository invoiceRepository;
 
     @InjectMocks
     CompanyService companyService;
@@ -106,7 +110,6 @@ public class CompanyServiceTest {
     @Test
     public void test_addDuplicateCompany() throws DuplicateCompanyException{
 
-        CompanyService companyService = new CompanyService(companyRepository);
         Company company = CompanyTestHelper.getCompany1();
         when(companyRepository.saveAndFlush(any())).thenThrow(DataIntegrityViolationException.class);
         Exception exception = assertThrows(DuplicateCompanyException.class, () -> {
@@ -120,7 +123,7 @@ public class CompanyServiceTest {
     public void testGetInvoiceByCompany(){
 
         Company company = CompanyTestHelper.getCompanyWithInvoices();
-        when(companyRepository.findByName(anyString())).thenReturn(company);
+        when(invoiceRepository.findByCompany_Name(anyString())).thenReturn(company.getInvoices());
         List<Invoice> invoiceList = companyService.getInvoicesByCompanyName(company.getName());
         assertEquals(invoiceList.size(), 2);
         assertEquals(invoiceList.get(0).getStatus(), company.getInvoices().get(0).getStatus());
@@ -128,7 +131,7 @@ public class CompanyServiceTest {
         assertEquals(invoiceList.get(1).getStatus(), company.getInvoices().get(1).getStatus());
         assertEquals(invoiceList.get(1).getAuthor(), company.getInvoices().get(1).getAuthor());
 
-        verify(companyRepository, times(1)).findByName(anyString());
+        verify(invoiceRepository, times(1)).findByCompany_Name(anyString());
 
     }
 }
