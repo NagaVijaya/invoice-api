@@ -1,10 +1,13 @@
 package com.galvanize.orion.invoicify.service;
 
+import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
+import com.galvanize.orion.invoicify.exception.CompanyDoesNotExistException;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
 import com.galvanize.orion.invoicify.exception.InvoicePaidException;
+import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
@@ -30,8 +33,14 @@ import static com.galvanize.orion.invoicify.utilities.Constants.*;
 public class InvoiceService {
 
     private InvoiceRepository invoiceRepository;
+    private CompanyRepository companyRepository;
 
-    public Invoice createInvoice(Invoice invoice) throws IllegalAccessException {
+    public Invoice createInvoice(Invoice invoice) throws IllegalAccessException, CompanyDoesNotExistException {
+
+        Company existingCompany = companyRepository.findByName(invoice.getCompany().getName());
+        if(existingCompany == null){
+            throw new CompanyDoesNotExistException();
+        }
 
         //Calculate the cost for each line item and add that cost to invoice
         calculateLineItemsTotalCost(invoice);
@@ -62,10 +71,12 @@ public class InvoiceService {
     }
 
     public Invoice updateInvoice(Invoice invoice) throws InvoicePaidException, InvoiceNotFoundException, IllegalAccessException {
-        checkValidInvoice(invoice.getId());
+        Invoice invoiceToBeModified = checkValidInvoice(invoice.getId());
         calculateLineItemsTotalCost(invoice);
-        invoice.setModifiedDate(new Date());
-        return invoiceRepository.save(invoice);
+        invoiceToBeModified.setTotalCost(invoice.getTotalCost());
+        invoiceToBeModified.setModifiedDate(new Date());
+        invoiceToBeModified.setStatus(invoice.getStatus());
+        return invoiceRepository.save(invoiceToBeModified);
     }
 
     public void deleteInvoice(UUID invoiceId) throws InvoiceNotStaleException, InvoiceNotFoundException {
