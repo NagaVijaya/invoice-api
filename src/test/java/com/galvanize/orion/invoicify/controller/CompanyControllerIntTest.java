@@ -5,38 +5,23 @@ import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
 import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
-import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
-import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
+import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
-import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Propagation;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -53,6 +38,9 @@ public class CompanyControllerIntTest {
 
     @Autowired
     private CompanyRepository companyRepository;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
 
     @Test
     public void test_addCompany() throws Exception {
@@ -131,7 +119,7 @@ public class CompanyControllerIntTest {
         modifiedCompany.setZipCode("18654");
         modifiedCompany.setCity("Austin");
 
-        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+        mockMvc.perform(put("/api/v1/company/" + modifiedCompany.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(modifiedCompany)))
                 .andExpect(status().isOk())
@@ -158,7 +146,7 @@ public class CompanyControllerIntTest {
         modifiedCompany.setCity("Austin");
 
 
-        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+        mockMvc.perform(put("/api/v1/company/" + modifiedCompany.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(modifiedCompany)))
                 .andExpect(status().isNotAcceptable())
@@ -176,13 +164,66 @@ public class CompanyControllerIntTest {
         modifiedCompany.setCity("Austin");
 
 
-        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+        mockMvc.perform(put("/api/v1/company/" + modifiedCompany.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(modifiedCompany)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(Constants.COMPANY_DOES_NOT_EXIST));
 
 
+    }
+
+    @Test
+    public void test_deleteCompany_paidAndNonArchivedInvoices() throws Exception {
+
+        Company nonArchivedInvoiceCompany = CompanyTestHelper.getExistingCompany1();
+        nonArchivedInvoiceCompany = companyRepository.saveAndFlush(nonArchivedInvoiceCompany);
+        Invoice paidInvoice = InvoiceTestHelper.getPaidInvoice();
+        paidInvoice.setCompany(nonArchivedInvoiceCompany);
+        paidInvoice = invoiceRepository.saveAndFlush(paidInvoice);
+        nonArchivedInvoiceCompany.getInvoices().add(paidInvoice);
+
+        mockMvc.perform(delete("/api/v1/company/" + nonArchivedInvoiceCompany.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(nonArchivedInvoiceCompany.getId().toString()))
+                .andExpect(jsonPath("$.name").value(nonArchivedInvoiceCompany.getName()))
+                .andExpect(jsonPath("$.address").value(nonArchivedInvoiceCompany.getAddress()))
+                .andExpect(jsonPath("$.state").value(nonArchivedInvoiceCompany.getState()))
+                .andExpect(jsonPath("$.city").value(nonArchivedInvoiceCompany.getCity()))
+                .andExpect(jsonPath("$.archived").value(true))
+                .andExpect(jsonPath("$.invoices[0].archived").value(true))
+                .andExpect(jsonPath("$.invoices[0].id").value(paidInvoice.getId().toString()))
+                .andExpect(jsonPath("$.zipCode").value(nonArchivedInvoiceCompany.getZipCode()));
+    }
+
+    @Test
+    public void test_deleteNonExistentCompany_throws_CompanyDoesNotExist() throws Exception {
+        Company deleteCompany = CompanyTestHelper.getExistingCompany1();
+        deleteCompany.setArchived(true);
+
+        mockMvc.perform(delete("/api/v1/company/" + deleteCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(deleteCompany)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(Constants.COMPANY_DOES_NOT_EXIST));
+    }
+
+    @Test
+    public void test_deleteCompany_throws_UnpaidInvoiceExist() throws Exception {
+
+        Company deleteCompany = CompanyTestHelper.getCompany1();
+        deleteCompany = companyRepository.saveAndFlush(deleteCompany);
+        Invoice unpaidInvoice = InvoiceTestHelper.getUnpaidInvoice();
+        unpaidInvoice.setCompany(deleteCompany);
+        unpaidInvoice = invoiceRepository.saveAndFlush(unpaidInvoice);
+        deleteCompany.getInvoices().add(unpaidInvoice);
+        deleteCompany = companyRepository.saveAndFlush(deleteCompany);
+
+        mockMvc.perform(delete("/api/v1/company/" + deleteCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(deleteCompany)))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.message").value(Constants.UNPAID_INVOICE_EXIST_CAN_NOT_DELETE_COMPANY));
     }
 
     @Test

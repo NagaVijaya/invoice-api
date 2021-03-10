@@ -5,16 +5,18 @@ import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
+import com.galvanize.orion.invoicify.exception.UnpaidInvoiceExistException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
+import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,16 +47,16 @@ public class CompanyService {
         List<Company> companyList = companyRepository.findAllByArchived(false);
         List<SimpleCompany> simpleCompanies = companyList.stream()
                 .map(company -> SimpleCompany.builder()
-                                .name(company.getName())
-                                .city(company.getCity())
-                                .state(company.getState())
-                                .build())
+                        .name(company.getName())
+                        .city(company.getCity())
+                        .state(company.getState())
+                        .build())
                 .collect(Collectors.toList());
 
         return simpleCompanies;
     }
 
-    public Company modifyCompany(String companyId ,Company company) throws CompanyDoesNotExist, DuplicateCompanyException {
+    public Company modifyCompany(String companyId, Company company) throws CompanyDoesNotExist, DuplicateCompanyException {
         Optional<Company> existingCompany = companyRepository.findById(UUID.fromString(companyId));
         if (!existingCompany.isPresent()) throw new CompanyDoesNotExist();
         //company.setId(existingCompany.get().getId());
@@ -77,11 +79,31 @@ public class CompanyService {
 
         Company company = companyRepository.findByName(name);
 
-        if(null == company){
+        if (null == company) {
             throw new CompanyDoesNotExist();
         }
         List<Invoice> invoiceList = invoiceRepository.findByCompany_Name(name);
 
         return invoiceList;
+    }
+
+    public Company deleteCompany(String companyId) throws CompanyDoesNotExist, UnpaidInvoiceExistException {
+        Optional<Company> existingCompany = companyRepository.findById(UUID.fromString(companyId));
+        if (!existingCompany.isPresent()) throw new CompanyDoesNotExist();
+        List<Invoice> invoiceList = existingCompany.get().getInvoices();
+        AtomicBoolean unPaidInvoiceExist = new AtomicBoolean(false);
+        invoiceList.forEach(invoice -> {
+            if (invoice.getStatus() == StatusEnum.UNPAID)
+                unPaidInvoiceExist.set(true);
+            else
+                invoice.setArchived(true);
+        });
+        if (unPaidInvoiceExist.get()) {
+            throw new UnpaidInvoiceExistException();
+        }
+        existingCompany.get().setInvoices(invoiceList);
+        invoiceRepository.saveAll(invoiceList);
+        existingCompany.get().setArchived(true);
+        return companyRepository.saveAndFlush(existingCompany.get());
     }
 }

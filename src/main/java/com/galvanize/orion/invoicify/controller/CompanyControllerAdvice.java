@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
+import com.galvanize.orion.invoicify.exception.UnpaidInvoiceExistException;
 import com.galvanize.orion.invoicify.utilities.Constants;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ public class CompanyControllerAdvice extends ResponseEntityExceptionHandler {
         String messageObject = objectMapper.writeValueAsString(duplicateCompany);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_ACCEPTABLE);
     }
+
     @ExceptionHandler(CompanyDoesNotExist.class)
     public ResponseEntity<Object> handleCompanyDoesNotExistException(CompanyDoesNotExist companyDoesNotExist, WebRequest webRequest) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -33,4 +35,14 @@ public class CompanyControllerAdvice extends ResponseEntityExceptionHandler {
         String messageObject = objectMapper.writeValueAsString(companyDoesNotExistObj);
         return new ResponseEntity<>(messageObject, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(UnpaidInvoiceExistException.class)
+    public ResponseEntity<Object> handleUnpaidInvoiceExistException(UnpaidInvoiceExistException unpaidInvoiceExistException, WebRequest webRequest) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode unpaidInvoiceExist = objectMapper.createObjectNode();
+        unpaidInvoiceExist.put(Constants.MESSAGE, unpaidInvoiceExistException.getMessage());
+        String messageObject = objectMapper.writeValueAsString(unpaidInvoiceExist);
+        return new ResponseEntity<>(messageObject, HttpStatus.NOT_ACCEPTABLE);
+    }
+
 }
