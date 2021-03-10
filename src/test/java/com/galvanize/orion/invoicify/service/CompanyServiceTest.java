@@ -7,6 +7,7 @@ import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.exception.CompanyArchivedException;
 import com.galvanize.orion.invoicify.exception.CompanyDoesNotExistException;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
+import com.galvanize.orion.invoicify.exception.UnpaidInvoiceExistException;
 import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
 import com.galvanize.orion.invoicify.utilities.Constants;
@@ -24,8 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -94,7 +94,7 @@ public class CompanyServiceTest {
     }
 
     @Test
-    public void test_addCompany() throws DuplicateCompanyException{
+    public void test_addCompany() throws DuplicateCompanyException {
 
         Company company = CompanyTestHelper.getCompany1();
         Company createdCompany = CompanyTestHelper.getCompany1();
@@ -112,7 +112,7 @@ public class CompanyServiceTest {
     }
 
     @Test
-    public void test_addDuplicateCompany() throws DuplicateCompanyException{
+    public void test_addDuplicateCompany() throws DuplicateCompanyException {
 
         Company company = CompanyTestHelper.getCompany1();
         when(companyRepository.saveAndFlush(any())).thenThrow(DataIntegrityViolationException.class);
@@ -131,7 +131,7 @@ public class CompanyServiceTest {
         modifiedCompany.setCity("Austin");
         when(companyRepository.findById(any())).thenReturn(Optional.of(existingCompany));
         when(companyRepository.saveAndFlush(any())).thenReturn(modifiedCompany);
-        Company expectedCompany = companyService.modifyCompany(modifiedCompany.getId().toString(),modifiedCompany);
+        Company expectedCompany = companyService.modifyCompany(modifiedCompany.getId().toString(), modifiedCompany);
         assertEquals(expectedCompany.getId(), modifiedCompany.getId());
         assertEquals(expectedCompany.getAddress(), modifiedCompany.getAddress());
         assertEquals(expectedCompany.getState(), modifiedCompany.getState());
@@ -169,7 +169,7 @@ public class CompanyServiceTest {
         modifiedCompany.setCity("Austin");
         when(companyRepository.findById(any())).thenReturn(Optional.empty());
 
-        CompanyDoesNotExistException companyDoesNotExistException = assertThrows(CompanyDoesNotExistException.class, () -> companyService.modifyCompany(modifiedCompany.getId().toString(),modifiedCompany));
+        CompanyDoesNotExistException companyDoesNotExistException = assertThrows(CompanyDoesNotExistException.class, () -> companyService.modifyCompany(modifiedCompany.getId().toString(), modifiedCompany));
         assertEquals(Constants.COMPANY_DOES_NOT_EXIST, companyDoesNotExistException.getMessage());
 
         verify(companyRepository, times(1)).findById(any());
@@ -186,6 +186,41 @@ public class CompanyServiceTest {
         CompanyArchivedException companyArchivedException = assertThrows(CompanyArchivedException.class, () -> companyService.modifyCompany(archivedCompany.getId().toString(),archivedCompany));
         assertEquals(Constants.COMPANY_ARCHIVED, companyArchivedException.getMessage());
 
+        verify(companyRepository, times(1)).findById(any());
+    }
+
+    @Test
+    public void test_deleteCompany_paidAndNonArchivedInvoices() throws UnpaidInvoiceExistException, CompanyDoesNotExistException {
+        Company existingCompany = CompanyTestHelper.getCompanyWithPaidNonArchivedInvoicesList();
+        Company deleteCompany = CompanyTestHelper.getCompanyWithPaidArchivedInvoicesList();
+        deleteCompany.setArchived(true);
+        when(companyRepository.findById(any())).thenReturn(Optional.of(existingCompany));
+        when(companyRepository.saveAndFlush(any())).thenReturn(deleteCompany);
+        Company expectedCompany = companyService.deleteCompany(deleteCompany.getId().toString());
+        assertEquals(expectedCompany.getId(), deleteCompany.getId());
+        assertTrue(deleteCompany.isArchived());
+        assertTrue(deleteCompany.getInvoices().get(0).isArchived());
+        verify(companyRepository, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    public void test_deleteNonExistentCompany_throws_CompanyDoesNotExist() {
+        Company deleteCompany = CompanyTestHelper.getExistingCompany1();
+        deleteCompany.setArchived(true);
+        when(companyRepository.findById(any())).thenReturn(Optional.empty());
+
+        CompanyDoesNotExistException companyDoesNotExist = assertThrows(CompanyDoesNotExistException.class, () -> companyService.deleteCompany(deleteCompany.getId().toString()));
+        assertEquals(Constants.COMPANY_DOES_NOT_EXIST, companyDoesNotExist.getMessage());
+
+        verify(companyRepository, times(1)).findById(any());
+    }
+
+    @Test
+    public void test_deleteCompany_throws_UnpaidInvoiceExist() {
+        Company deleteCompany = CompanyTestHelper.getCompanyWithInvoicesList();
+        when(companyRepository.findById(any())).thenReturn(Optional.of(deleteCompany));
+        UnpaidInvoiceExistException unpaidInvoiceExistException = assertThrows(UnpaidInvoiceExistException.class, () -> companyService.deleteCompany(deleteCompany.getId().toString()));
+        assertEquals(Constants.UNPAID_INVOICE_EXIST_CAN_NOT_DELETE_COMPANY, unpaidInvoiceExistException.getMessage());
         verify(companyRepository, times(1)).findById(any());
     }
 
