@@ -2,6 +2,7 @@ package com.galvanize.orion.invoicify.controller;
 
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
+import com.galvanize.orion.invoicify.exception.CompanyDoesNotExistException;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.exception.InvoicePaidException;
 import com.galvanize.orion.invoicify.service.InvoiceService;
@@ -22,7 +23,7 @@ public class InvoiceController {
 
     @PostMapping("/invoice")
     @ResponseStatus(HttpStatus.CREATED)
-    public Invoice createInvoice(@RequestBody Invoice invoice) throws IllegalAccessException {
+    public Invoice createInvoice(@RequestBody Invoice invoice) throws IllegalAccessException, CompanyDoesNotExistException {
         return invoiceService.createInvoice(invoice);
     }
 

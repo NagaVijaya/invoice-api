@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galvanize.orion.invoicify.TestHelper.CompanyTestHelper;
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
-import com.galvanize.orion.invoicify.exception.CompanyDoesNotExist;
+import com.galvanize.orion.invoicify.exception.CompanyArchivedException;
+import com.galvanize.orion.invoicify.exception.CompanyDoesNotExistException;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
 import com.galvanize.orion.invoicify.exception.UnpaidInvoiceExistException;
 import com.galvanize.orion.invoicify.service.CompanyService;
@@ -215,12 +216,31 @@ public class CompanyControllerUnitTest {
         modifiedCompany.setZipCode("18654");
         modifiedCompany.setCity("Austin");
 
-        when(companyService.modifyCompany(any(), any())).thenThrow(new CompanyDoesNotExist());
+        when(companyService.modifyCompany(any(), any())).thenThrow(new CompanyDoesNotExistException());
         mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(modifiedCompany)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(Constants.COMPANY_DOES_NOT_EXIST));
+
+        verify(companyService, times(1)).modifyCompany(any(), any());
+    }
+
+    @Test
+    public void test_modifyCompany_throws_CompanyArchivedException() throws Exception {
+
+        Company modifiedCompany = CompanyTestHelper.getExistingCompany1();
+        modifiedCompany.setId(UUID.randomUUID());
+        modifiedCompany.setZipCode("18654");
+        modifiedCompany.setCity("Austin");
+        modifiedCompany.setArchived(true);
+
+        when(companyService.modifyCompany(any(), any())).thenThrow(new CompanyArchivedException(Constants.COMPANY_ARCHIVED));
+        mockMvc.perform(put("/api/v1/company/"+modifiedCompany.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(modifiedCompany)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(Constants.COMPANY_ARCHIVED));
 
         verify(companyService, times(1)).modifyCompany(any(), any());
     }
@@ -253,7 +273,7 @@ public class CompanyControllerUnitTest {
 
         Company deleteCompany = CompanyTestHelper.getExistingCompany1();
 
-        when(companyService.deleteCompany(deleteCompany.getId().toString())).thenThrow(new CompanyDoesNotExist());
+        when(companyService.deleteCompany(deleteCompany.getId().toString())).thenThrow(new CompanyDoesNotExistException());
 
         mockMvc.perform(delete("/api/v1/company/"+deleteCompany.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)

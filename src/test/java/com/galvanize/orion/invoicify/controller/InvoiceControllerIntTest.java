@@ -300,7 +300,7 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration test throws exception when trying to add line item to paid invoice ")
     public void test_addLineItem_exceptionThrownWhenInvoiceIsPaid() throws Exception {
-        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company existingCompany = companyRepository.save(CompanyTestHelper.getCompany1());
         Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.PAID).company(existingCompany).build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
@@ -323,7 +323,7 @@ public class InvoiceControllerIntTest {
     @Test
     @DisplayName("Integration test throws exception when trying to modify paid invoice ")
     public void test_modifyPaidInvoice_throwsInvoiceModifyException() throws Exception {
-        Company existingCompany = CompanyTestHelper.getExistingCompany1();
+        Company existingCompany = companyRepository.save(CompanyTestHelper.getCompany1());
         Invoice invoice = Invoice.builder().author("Gokul").lineItems(new ArrayList<>()).status(StatusEnum.PAID).company(existingCompany).build();
         MvcResult result = mvc.perform(post("/api/v1/invoice").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(invoice)))
                 .andReturn();
