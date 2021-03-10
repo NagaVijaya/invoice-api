@@ -226,14 +226,15 @@ public class CompanyControllerUnitTest {
     }
 
     @Test
-    public void test_deleteCompany() throws Exception {
+    public void test_deleteCompany_paidAndNonArchivedInvoices() throws Exception {
 
-        Company deleteCompany = CompanyTestHelper.getExistingCompany1();
-        deleteCompany.setArchived(true);
+        Company deleteCompany = CompanyTestHelper.getCompanyWithPaidArchivedInvoicesList();
+        Company nonArchivedInvoiceCompany = CompanyTestHelper.getCompanyWithPaidNonArchivedInvoicesList();
+
         when(companyService.deleteCompany(deleteCompany.getId().toString())).thenReturn(deleteCompany);
         mockMvc.perform(delete("/api/v1/company/"+deleteCompany.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(deleteCompany)))
+                .content(objectMapper.writeValueAsString(nonArchivedInvoiceCompany)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(deleteCompany.getId().toString()))
                 .andExpect(jsonPath("$.name").value(deleteCompany.getName()))
@@ -241,7 +242,9 @@ public class CompanyControllerUnitTest {
                 .andExpect(jsonPath("$.state").value(deleteCompany.getState()))
                 .andExpect(jsonPath("$.city").value(deleteCompany.getCity()))
                 .andExpect(jsonPath("$.archived").value(true))
+                .andExpect(jsonPath("$.invoices[0].archived").value(true))
                 .andExpect(jsonPath("$.zipCode").value(deleteCompany.getZipCode()));
+
         verify(companyService, times(1)).deleteCompany(any());
     }
 

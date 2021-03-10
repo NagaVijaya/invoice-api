@@ -112,4 +112,40 @@ public class CompanyTestHelper {
         return company;
 
     }
+
+    public static Company getCompanyWithPaidArchivedInvoicesList(){
+        Company company = new Company();
+        Invoice invoice = InvoiceTestHelper.getPaidInvoice();
+        invoice.setArchived(true);
+        List<Invoice> invoiceList = Arrays.asList(invoice);
+
+        company.setAddress("Bucklands hills drive");
+        company.setCity("Mississauga");
+        company.setState("ON");
+        company.setZipCode("L6H0K1");
+        company.setName("Company1");
+        company.setId(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+        company.setInvoices(invoiceList);
+        company.setArchived(true);
+        return company;
+
+    }
+
+    public static Company getCompanyWithPaidNonArchivedInvoicesList(){
+        Company company = new Company();
+        Invoice invoice = InvoiceTestHelper.getPaidInvoice();
+
+        List<Invoice> invoiceList = Arrays.asList(invoice);
+
+        company.setAddress("Bucklands hills drive");
+        company.setCity("Mississauga");
+        company.setState("ON");
+        company.setZipCode("L6H0K1");
+        company.setName("Company1");
+        company.setId(UUID.fromString("4fa30ded-c47c-436a-9616-7e3b36be84b2"));
+        company.setInvoices(invoiceList);
+
+        return company;
+
+    }
 }

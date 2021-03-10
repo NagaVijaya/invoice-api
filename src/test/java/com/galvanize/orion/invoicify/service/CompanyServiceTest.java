@@ -177,15 +177,16 @@ public class CompanyServiceTest {
     }
 
     @Test
-    public void test_deleteCompany() throws CompanyDoesNotExist, UnpaidInvoiceExistException {
-        Company existingCompany = CompanyTestHelper.getExistingCompany1();
-        Company deleteCompany = CompanyTestHelper.getExistingCompany1();
+    public void test_deleteCompany_paidAndNonArchivedInvoices() throws CompanyDoesNotExist, UnpaidInvoiceExistException {
+        Company existingCompany = CompanyTestHelper.getCompanyWithPaidNonArchivedInvoicesList();
+        Company deleteCompany = CompanyTestHelper.getCompanyWithPaidArchivedInvoicesList();
         deleteCompany.setArchived(true);
         when(companyRepository.findById(any())).thenReturn(Optional.of(existingCompany));
         when(companyRepository.saveAndFlush(any())).thenReturn(deleteCompany);
         Company expectedCompany = companyService.deleteCompany(deleteCompany.getId().toString());
         assertEquals(expectedCompany.getId(), deleteCompany.getId());
         assertTrue(deleteCompany.isArchived());
+        assertTrue(deleteCompany.getInvoices().get(0).isArchived());
         verify(companyRepository, times(1)).saveAndFlush(any());
     }
 
