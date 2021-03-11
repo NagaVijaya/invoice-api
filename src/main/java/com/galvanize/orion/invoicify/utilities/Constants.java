@@ -17,4 +17,7 @@ public class Constants {
     public static final BigDecimal ONE_HUNDRED_PERCENT = BigDecimal.valueOf(100.00);
     public static final Range<BigDecimal> DISCOUNT_RANGE = Range.between(BigDecimal.ZERO, ONE_HUNDRED_PERCENT);
     public static final String DISCOUNT_OUT_OF_BOUNDS = "Discount percent out of bounds";
+    public static final String COMPANY_DOES_NOT_EXIST = "Company does not exist";
+    public static final String COMPANY_ARCHIVED = "Company archived cannot be modified";
+    public static final String UNPAID_INVOICE_EXIST_CAN_NOT_DELETE_COMPANY = "Unpaid invoice - Company can not be deleted";
 }

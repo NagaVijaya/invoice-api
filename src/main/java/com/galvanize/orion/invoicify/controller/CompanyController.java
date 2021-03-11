@@ -4,7 +4,10 @@ package com.galvanize.orion.invoicify.controller;
 import com.galvanize.orion.invoicify.dto.SimpleCompany;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
+import com.galvanize.orion.invoicify.exception.CompanyArchivedException;
+import com.galvanize.orion.invoicify.exception.CompanyDoesNotExistException;
 import com.galvanize.orion.invoicify.exception.DuplicateCompanyException;
+import com.galvanize.orion.invoicify.exception.UnpaidInvoiceExistException;
 import com.galvanize.orion.invoicify.service.CompanyService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,13 +35,22 @@ public class CompanyController {
     @PostMapping("/company")
     @ResponseStatus(HttpStatus.CREATED)
     public Company addCompany(@RequestBody Company company) throws DuplicateCompanyException {
-
-
         return companyService.addCompany(company);
     }
 
+    @PutMapping("/company/{companyId}")
+    public Company modifyCompany(@PathVariable String companyId, @RequestBody Company company) throws CompanyDoesNotExistException, DuplicateCompanyException, CompanyArchivedException {
+        return companyService.modifyCompany(companyId, company);
+    }
+
     @GetMapping("/companies/invoices/{companyName}")
-    public List<Invoice> getInvoicesByCompanyName(@PathVariable String companyName){
+    public List<Invoice> getInvoicesByCompanyName(@PathVariable String companyName) throws CompanyDoesNotExistException {
         return companyService.getInvoicesByCompanyName(companyName);
+    }
+
+
+    @DeleteMapping("/company/{companyId}")
+    public Company deleteCompany(@PathVariable String companyId) throws CompanyDoesNotExistException, UnpaidInvoiceExistException {
+        return companyService.deleteCompany(companyId);
     }
 }

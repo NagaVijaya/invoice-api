@@ -5,12 +5,18 @@ import com.galvanize.orion.invoicify.TestHelper.InvoiceTestHelper;
 import com.galvanize.orion.invoicify.entities.Company;
 import com.galvanize.orion.invoicify.entities.Invoice;
 import com.galvanize.orion.invoicify.entities.LineItem;
+import com.galvanize.orion.invoicify.exception.CompanyDoesNotExistException;
 import com.galvanize.orion.invoicify.exception.InvoiceNotFoundException;
 import com.galvanize.orion.invoicify.exception.InvoiceNotStaleException;
 import com.galvanize.orion.invoicify.exception.InvoicePaidException;
+import com.galvanize.orion.invoicify.repository.CompanyRepository;
 import com.galvanize.orion.invoicify.repository.InvoiceRepository;
+import com.galvanize.orion.invoicify.utilities.Constants;
 import com.galvanize.orion.invoicify.utilities.StatusEnum;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
@@ -27,13 +33,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class InvoiceServiceTest {
 
     @MockBean
     private InvoiceRepository invoiceRepository;
 
+    @MockBean
+    private CompanyRepository companyRepository;
+
+    @InjectMocks
+    private InvoiceService invoiceService;
+
     @Test
-    public void testCreateInvoiceNoLineIem() throws IllegalAccessException {
+    public void testCreateInvoiceNoLineIem() throws IllegalAccessException, CompanyDoesNotExistException {
         Company existingCompany = CompanyTestHelper.getExistingCompany1();
         Invoice invoice = Invoice.builder()
                                  .author("Gokul")
@@ -45,18 +58,19 @@ public class InvoiceServiceTest {
                                             .totalCost(BigDecimal.valueOf(0))
                                             .createdDate(new Date())
                                             .build();
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         when(invoiceRepository.save(any())).thenReturn(expectedInvoice);
+        when(companyRepository.findByName(anyString())).thenReturn(CompanyTestHelper.getCompany1());
         Invoice actualInvoice = invoiceService.createInvoice(invoice);
         assertEquals(expectedInvoice.getAuthor(), actualInvoice.getAuthor());
         assertEquals(expectedInvoice.getCompany(), actualInvoice.getCompany());
         assertEquals(expectedInvoice.getTotalCost(), actualInvoice.getTotalCost());
         assertEquals(expectedInvoice.getCreatedDate(), actualInvoice.getCreatedDate());
         verify(invoiceRepository, times(1)).save(any());
+        verify(companyRepository, times(1)).findByName(anyString());
     }
 
     @Test
-    public void testCreateInvoiceMultipleLineIem() throws IllegalAccessException {
+    public void testCreateInvoiceMultipleLineIem() throws IllegalAccessException, CompanyDoesNotExistException {
         LineItem lineItem = LineItem.builder().description("project 1").quantity(10).rate(BigDecimal.valueOf(5.4)).build();
         LineItem lineItem2 = LineItem.builder().description("project 2").quantity(10).rate(BigDecimal.valueOf(4.6)).build();
         List<LineItem> lineItemList = new ArrayList<>();
@@ -78,8 +92,8 @@ public class InvoiceServiceTest {
                                         .createdDate(new Date())
                                         .discountPercent(BigDecimal.valueOf(100.00))
                                         .build();
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         when(invoiceRepository.save(any())).thenReturn(expectedInvoice);
+        when(companyRepository.findByName(anyString())).thenReturn(existingCompany);
         Invoice actualInvoice = invoiceService.createInvoice(invoice);
         assertEquals(expectedInvoice.getAuthor(), actualInvoice.getAuthor());
         assertEquals(expectedInvoice.getCompany(), actualInvoice.getCompany());
@@ -90,6 +104,7 @@ public class InvoiceServiceTest {
         assertEquals(expectedInvoice.getLineItems().get(0).getFee(), BigDecimal.valueOf(54.0));
         assertEquals(expectedInvoice.getLineItems().get(1).getFee(), BigDecimal.valueOf(46.0));
         verify(invoiceRepository, times(1)).save(any());
+        verify(companyRepository, times(1)).findByName(anyString());
     }
 
     @Test
@@ -105,9 +120,10 @@ public class InvoiceServiceTest {
                 .lineItems(lineItemList)
                 .discountPercent(BigDecimal.valueOf(100.01))
                 .build();
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        when(companyRepository.findByName(anyString())).thenReturn(CompanyTestHelper.getCompany1());
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> invoiceService.createInvoice(invoice));
         assertEquals("Discount percent out of bounds", illegalArgumentException.getMessage());
+        verify(companyRepository, times(1)).findByName(anyString());
     }
 
     @Test
@@ -123,9 +139,24 @@ public class InvoiceServiceTest {
                 .lineItems(lineItemList)
                 .discountPercent(BigDecimal.valueOf(-0.01))
                 .build();
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
+        when(companyRepository.findByName(anyString())).thenReturn(CompanyTestHelper.getCompany1());
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> invoiceService.createInvoice(invoice));
         assertEquals("Discount percent out of bounds", illegalArgumentException.getMessage());
+        verify(companyRepository, times(1)).findByName(anyString());
+    }
+
+    @Test
+    public void testCreateInvoice_NonExistingCompany_ThrowsException() throws IllegalAccessException {
+        Company nonExistingCompany = CompanyTestHelper.getExistingCompany1();
+        Invoice invoice = Invoice.builder()
+                .author("Gokul")
+                .company(nonExistingCompany)
+                .lineItems(new ArrayList<>()).build();
+        when(companyRepository.findByName(anyString())).thenReturn(null);
+        CompanyDoesNotExistException companyDoesNotExistException = assertThrows(CompanyDoesNotExistException.class, () -> invoiceService.createInvoice(invoice));
+        assertEquals(Constants.COMPANY_DOES_NOT_EXIST, companyDoesNotExistException.getMessage());
+
+        verify(companyRepository, times(1)).findByName(any());
     }
 
 
@@ -159,7 +190,6 @@ public class InvoiceServiceTest {
                                             .discountPercent(BigDecimal.valueOf(10.00))
                                             .createdDate(new Date()).build();
 
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         when(invoiceRepository.save(any())).thenReturn(expectedInvoice);
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingInvoice1);
 
@@ -185,7 +215,6 @@ public class InvoiceServiceTest {
         Page<Invoice> page = new PageImpl<>(new ArrayList<>());
         when(invoiceRepository.findAllByArchived(anyBoolean(), any(Pageable.class))).thenReturn(page);
 
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(0, result.size());
 
@@ -199,13 +228,10 @@ public class InvoiceServiceTest {
         Page<Invoice> page = new PageImpl<>(invoiceList);
         when(invoiceRepository.findAllByArchived(anyBoolean(), any(Pageable.class))).thenReturn(page);
 
-
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(1, result.size());
 
         verify(invoiceRepository, times(1)).findAllByArchived(anyBoolean(),any());
-
     }
 
     @Test
@@ -216,8 +242,6 @@ public class InvoiceServiceTest {
         Page<Invoice> page = new PageImpl<>(invoiceList);
         when(invoiceRepository.findAllByArchived(anyBoolean(), any())).thenReturn(page);
 
-
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(2, result.size());
         assertEquals("Peter", result.get(0).getAuthor());
@@ -235,8 +259,6 @@ public class InvoiceServiceTest {
         Page<Invoice> page = new PageImpl<>(invoiceList);
         when(invoiceRepository.findAllByArchived(anyBoolean(), any(Pageable.class))).thenReturn(page);
 
-
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         List<Invoice> result = invoiceService.getAllInvoices(1);
         assertEquals(2, result.size());
         assertEquals("Peter", result.get(0).getAuthor());
@@ -254,7 +276,6 @@ public class InvoiceServiceTest {
         LineItem lineItem2 = InvoiceTestHelper.getLineItem2();
         Optional<Invoice> existingInvoice = Optional.empty();
 
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingInvoice);
 
         Exception exception = assertThrows(InvoiceNotFoundException.class, () -> {
@@ -278,7 +299,6 @@ public class InvoiceServiceTest {
         modifiedInvoice.setModifiedDate(new Date());
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingOptInvoice);
         when(invoiceRepository.save(any())).thenReturn(modifiedInvoice);
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
 
         Invoice actualInvoice = invoiceService.updateInvoice(existingInvoice);
 
@@ -296,7 +316,6 @@ public class InvoiceServiceTest {
         Optional<Invoice> existingOptInvoice = Optional.of(existingInvoice);
 
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(existingOptInvoice);
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
 
         Exception exception = assertThrows(InvoicePaidException.class, () -> {
             invoiceService.updateInvoice(existingInvoice);
@@ -321,7 +340,6 @@ public class InvoiceServiceTest {
 
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(Optional.of(invoice));
 
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         invoiceService.deleteInvoice(invoice.getId());
 
         verify(invoiceRepository, times(1)).findById(invoice.getId());
@@ -338,8 +356,6 @@ public class InvoiceServiceTest {
 
        when(invoiceRepository.findById(any(UUID.class))).thenReturn(Optional.of(invoice));
 
-       InvoiceService invoiceService = new InvoiceService(invoiceRepository);
-
         assertThrows(InvoiceNotStaleException.class,() ->
             invoiceService.deleteInvoice(invoice.getId())
         );
@@ -353,8 +369,6 @@ public class InvoiceServiceTest {
 
         when(invoiceRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
-
         assertThrows(InvoiceNotFoundException.class,() ->
                 invoiceService.deleteInvoice(invoiceId)
         );
@@ -362,18 +376,18 @@ public class InvoiceServiceTest {
     }
 
     @Test
-    public void testCreateInvoiceWithDiscount_withUnpaidInvoice() throws IllegalAccessException {
+    public void testCreateInvoiceWithDiscount_withUnpaidInvoice() throws IllegalAccessException, CompanyDoesNotExistException {
         Invoice unpaidInvoice = InvoiceTestHelper.getUnpaidDiscountedInvoice();
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
 
         when(invoiceRepository.save(any())).thenReturn(unpaidInvoice);
+        when(companyRepository.findByName(anyString())).thenReturn(CompanyTestHelper.getCompany1());
 
         Invoice invoiceAfterDiscount = invoiceService.createInvoice(unpaidInvoice);
 
         assertEquals(BigDecimal.valueOf(90.00).setScale(2), invoiceAfterDiscount.getTotalCost());
         verify(invoiceRepository, times(1)).save(unpaidInvoice);
+        verify(companyRepository, times(1)).findByName(anyString());
     }
-
 
     @Test
     public void testArchiveInvoices(){
@@ -385,7 +399,6 @@ public class InvoiceServiceTest {
                 InvoiceTestHelper.getUnpaidInvoiceWith1YearOld2());
 
         when(invoiceRepository.findByArchivedAndStatusAndCreatedDateBefore(any(Boolean.class), any(), any(Date.class))).thenReturn(invoiceList);
-        InvoiceService invoiceService = new InvoiceService(invoiceRepository);
         invoiceService.archiveInvoices();
 
         verify(invoiceRepository, times(1)).findByArchivedAndStatusAndCreatedDateBefore(any(Boolean.class), any(), any(Date.class));
