@@ -3,6 +3,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 	id 'jacoco'
+	id 'org.barfuin.gradle.jacocolog' version '1.0.1'
 }
 
 group = 'com.galvanize.orion'
@@ -38,7 +39,7 @@ test {
 jacocoTestReport {
 	dependsOn test // tests are required to run before generating the report
 	reports {
-		xml.enabled false
+		xml.enabled true
 		csv.enabled false
 		html.destination file("${buildDir}/jacocoHtml")
 	}
@@ -47,6 +48,7 @@ jacocoTestReport {
 			fileTree(dir: it, exclude: [
 					'com/galvanize/orion/invoicify/entities/**',
 					'com/galvanize/orion/invoicify/repository/**',
+					'com/galvanize/orion/invoicify/dto/**',
 					'com/galvanize/orion/invoicify/utilities/Constants.*',
 					'com/galvanize/orion/invoicify/InvoicifyApplication.*'
 			])
@@ -61,6 +63,7 @@ jacocoTestCoverageVerification {
 			excludes = [
 					'com.galvanize.orion.invoicify.entities.*',
 					'com.galvanize.orion.invoicify.repository.*',
+					'com.galvanize.orion.invoicify.dto.*',
 					'com.galvanize.orion.invoicify.utilities.Constants',
 					'com.galvanize.orion.invoicify.InvoicifyApplication',
 			]
