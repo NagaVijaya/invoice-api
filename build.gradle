@@ -61,6 +61,7 @@ jacocoTestCoverageVerification {
 			excludes = [
 					'com.galvanize.orion.invoicify.entities.*',
 					'com.galvanize.orion.invoicify.repository.*',
+					'com.galvanize.orion.invoicify.dto.*',
 					'com.galvanize.orion.invoicify.utilities.Constants',
 					'com.galvanize.orion.invoicify.InvoicifyApplication',
 			]
